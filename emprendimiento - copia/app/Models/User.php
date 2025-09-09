@@ -45,4 +45,26 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    // En tu modelo User.php
+    public function edificiosPropietario()
+    {
+        return $this->hasMany(Edificio::class, 'id_propietario');
+    }
+
+    public function departamentosResidente()
+    {
+        return $this->belongsToMany(Departamento::class, 'residente_departamento', 'id_residente', 'id_departamento')
+                    ->withPivot('fecha_inicio', 'fecha_fin')
+                    ->withTimestamps();
+    }
+
+    public function elementosCreados()
+    {
+        return $this->hasMany(User::class, 'created_by');
+    }
+
+    public function cliente()
+    {
+        return $this->hasOne(Cliente::class, 'id');
+    }
 }

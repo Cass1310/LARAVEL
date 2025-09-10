@@ -25,4 +25,11 @@ class Cliente extends Model
     {
         return $this->hasMany(Suscripcion::class, 'id_cliente');
     }
+    public function suscripcionActiva()
+    {
+        return $this->suscripciones()
+            ->where('estado', 'activa')
+            ->where('fecha_fin', '>=', now())
+            ->first();
+    }
 }

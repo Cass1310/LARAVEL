@@ -7,6 +7,8 @@ use App\Http\Controllers\FacturaDepartamentoController;
 use App\Http\Controllers\FacturaEdificioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResidenteController;
+use App\Http\Controllers\PropietarioController;
+use App\Http\Controllers\SuscripcionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -76,5 +78,36 @@ Route::middleware(['auth', 'verified', 'role:residente'])->prefix('residente')->
     Route::get('/alertas', [ResidenteController::class, 'alertas'])->name('alertas');
     Route::get('/mantenimientos', [ResidenteController::class, 'mantenimientos'])->name('mantenimientos');
     Route::get('/reportes', [ResidenteController::class, 'reportes'])->name('reportes');
+});
+
+// Rutas para propietarios
+Route::middleware(['auth', 'verified', 'role:propietario'])->prefix('propietario')->name('propietario.')->group(function () {
+    Route::get('/dashboard', [PropietarioController::class, 'dashboard'])->name('dashboard');
+    Route::get('/edificios', [PropietarioController::class, 'edificios'])->name('edificios');
+    Route::get('/edificios/{edificio}', [PropietarioController::class, 'edificioShow'])->name('edificios.show');
+    Route::get('/facturas', [PropietarioController::class, 'facturas'])->name('facturas');
+    Route::get('/facturas/crear', [PropietarioController::class, 'crearFactura'])->name('facturas.crear');
+    Route::post('/facturas', [PropietarioController::class, 'guardarFactura'])->name('facturas.guardar');
+    Route::post('/facturas/{factura}/pagar', [PropietarioController::class, 'pagarFactura'])->name('facturas.pagar');
+    Route::get('/residentes', [PropietarioController::class, 'residentes'])->name('residentes');
+    Route::get('/residentes/crear', [PropietarioController::class, 'crearResidente'])->name('residentes.crear');
+    Route::post('/residentes', [PropietarioController::class, 'guardarResidente'])->name('residentes.guardar');
+    Route::get('/alertas', [PropietarioController::class, 'alertas'])->name('alertas');
+    Route::post('/alertas/{alerta}/resolver', action: [PropietarioController::class, 'resolverAlerta'])->name('alertas.resolver');
+    Route::get('/mantenimientos', [PropietarioController::class, 'mantenimientos'])->name('mantenimientos');
+    Route::get('/mantenimientos/crear', [PropietarioController::class, 'crearMantenimiento'])->name('mantenimientos.crear');
+    Route::post('/mantenimientos', [PropietarioController::class, 'guardarMantenimiento'])->name('mantenimientos.guardar');
+    Route::get('/reportes', [PropietarioController::class, 'reportes'])->name('reportes');
+});
+
+// Rutas de suscripción
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/suscripcion', [SuscripcionController::class, 'index'])->name('suscripcion.index');
+    Route::get('/suscripcion/crear', [SuscripcionController::class, 'crear'])->name('suscripcion.crear');
+    Route::post('/suscripcion', [SuscripcionController::class, 'store'])->name('suscripcion.store');
+    Route::post('/suscripcion/{suscripcion}/renovar', [SuscripcionController::class, 'renovar'])->name('suscripcion.renovar');
+    Route::delete('/suscripcion/{suscripcion}/cancelar', [SuscripcionController::class, 'cancelar'])->name('suscripcion.cancelar');
+    Route::get('/suscripcion/{suscripcion}/pagos', [SuscripcionController::class, 'pagos'])->name('suscripcion.pagos');
+    Route::post('/suscripcion/{suscripcion}/pagos/{pago}/pagar', [SuscripcionController::class, 'pagarPago'])->name('suscripcion.pagos.pagar');
 });
 require __DIR__.'/auth.php';

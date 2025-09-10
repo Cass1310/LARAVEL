@@ -33,4 +33,33 @@ class Suscripcion extends Model
     {
         return $this->hasMany(SuscripcionPago::class, 'id_suscripcion');
     }
+
+    public function scopeActiva($query)
+    {
+        return $query->where('estado', 'activa')
+                    ->where('fecha_fin', '>=', now());
+    }
+
+    public function getPrecioMensualAttribute()
+    {
+        return $this->tipo === 'anual' ? 99.90 : 129.90;
+    }
+
+    public function getMontoTotalAttribute()
+    {
+        return $this->tipo === 'anual' ? $this->precio_mensual * 12 : $this->precio_mensual;
+    }
+
+    public function proximoPago()
+    {
+        return $this->pagos()
+            ->where('estado', 'pendiente')
+            ->orderBy('periodo')
+            ->first();
+    }
+
+    public function pagosPagados()
+    {
+        return $this->pagos()->pagados()->get();
+    }
 }

@@ -28,4 +28,27 @@ class SuscripcionPago extends Model
     {
         return $this->belongsTo(Suscripcion::class, 'id_suscripcion');
     }
+
+    public function scopePagados($query)
+    {
+        return $query->where('estado', 'pagado');
+    }
+
+    public function scopePendientes($query)
+    {
+        return $query->where('estado', 'pendiente');
+    }
+
+    public function scopeVencidos($query)
+    {
+        return $query->where('estado', 'vencido');
+    }
+
+    public function marcarComoPagado()
+    {
+        $this->update([
+            'estado' => 'pagado',
+            'fecha_pago' => now(),
+        ]);
+    }
 }

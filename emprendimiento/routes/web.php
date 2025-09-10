@@ -5,6 +5,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FacturaDepartamentoController;
 use App\Http\Controllers\FacturaEdificioController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ResidenteController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -64,5 +66,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::post('facturas-departamento/{facturaDepartamento}/pay', [FacturaDepartamentoController::class, 'pay'])
         ->name('facturas-departamento.pay');
+});
+
+
+// Rutas para residentes
+Route::middleware(['auth', 'verified', 'role:residente'])->prefix('residente')->name('residente.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/departamento', [ResidenteController::class, 'departamento'])->name('departamento');
+    Route::get('/alertas', [ResidenteController::class, 'alertas'])->name('alertas');
+    Route::get('/mantenimientos', [ResidenteController::class, 'mantenimientos'])->name('mantenimientos');
+    Route::get('/reportes', [ResidenteController::class, 'reportes'])->name('reportes');
 });
 require __DIR__.'/auth.php';

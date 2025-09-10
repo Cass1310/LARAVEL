@@ -10,12 +10,33 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
+                <!-- LO COMENTARE LUEGO  -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+                @auth
+                    @if(Auth::user()->rol === 'residente')
+                        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <x-nav-link :href="route('residente.dashboard')" :active="request()->routeIs('residente.dashboard')">
+                                {{ __('Dashboard') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('residente.departamento')" :active="request()->routeIs('residente.departamento')">
+                                {{ __('Mi Departamento') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('residente.alertas')" :active="request()->routeIs('residente.alertas')">
+                                {{ __('Alertas') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('residente.mantenimientos')" :active="request()->routeIs('residente.mantenimientos')">
+                                {{ __('Mantenimiento') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('residente.reportes')" :active="request()->routeIs('residente.reportes')">
+                                {{ __('Reportes') }}
+                            </x-nav-link>
+                        </div>
+                    @endif
+                @endauth
             </div>
 
             <!-- Settings Dropdown -->

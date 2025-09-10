@@ -4,62 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        Gate::authorize('is-admin');
+
+        $users = User::with('creador')->get();
+        return view('users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        Gate::authorize('is-admin');
+        return view('users.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
-    }
+        Gate::authorize('is-admin');
+        
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8',
+            'rol' => 'required|in:administrador,propietario,residente',
+            'telefono' => 'nullable|string|max:20',
+            'direccion' => 'nullable|string|max:200',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        //
-    }
+        $validated['password'] = bcrypt($validated['password']);
+        $validated['created_by'] = auth()->id();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        //
-    }
+        User::create($validated);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
+        return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente');
     }
 }

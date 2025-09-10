@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'nombre',
         'email',
         'password',
+        'rol',
+        'telefono',
+        'direccion',
+        'created_by'
     ];
 
     /**
@@ -33,11 +37,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -45,7 +44,30 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    // En tu modelo User.php
+    public function creador()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id_usuario');
+    }
+
+    public function usuariosCreados()
+    {
+        return $this->hasMany(User::class, 'created_by', 'id_usuario');
+    }
+
+    public function scopeAdministradores($query)
+    {
+        return $query->where('rol', 'administrador');
+    }
+
+    public function scopePropietarios($query)
+    {
+        return $query->where('rol', 'propietario');
+    }
+
+    public function scopeResidentes($query)
+    {
+        return $query->where('rol', 'residente');
+    }
     public function edificiosPropietario()
     {
         return $this->hasMany(Edificio::class, 'id_propietario');

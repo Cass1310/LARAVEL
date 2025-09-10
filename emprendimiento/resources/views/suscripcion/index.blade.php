@@ -30,8 +30,17 @@
                                 <p><strong>Fecha Inicio:</strong> {{ $suscripcionActiva->fecha_inicio->format('d/m/Y') }}</p>
                                 <p><strong>Fecha Fin:</strong> {{ $suscripcionActiva->fecha_fin->format('d/m/Y') }}</p>
                                 <p><strong>Días Restantes:</strong> 
-                                    <span class="badge bg-{{ $suscripcionActiva->fecha_fin->diffInDays(now()) < 15 ? 'warning' : 'info' }}">
-                                        {{ $suscripcionActiva->fecha_fin->diffInDays(now()) }} días
+                                    @php
+                                        $diasRestantes = (int) now()->diffInDays($suscripcionActiva->fecha_fin, false);
+                                    @endphp
+                                    <span class="badge bg-{{ $diasRestantes < 15 ? 'warning' : 'success' }}">
+                                        @if($diasRestantes > 0)
+                                            {{ $diasRestantes }} días
+                                        @elseif($diasRestantes == 0)
+                                            Hoy vence
+                                        @else
+                                            Vencida hace {{ abs($diasRestantes) }} días
+                                        @endif
                                     </span>
                                 </p>
                             </div>
@@ -86,11 +95,15 @@
                                         <th>Fecha Fin</th>
                                         <th>Estado</th>
                                         <th>Monto</th>
+                                        <th>Días Restantes</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($suscripciones as $suscripcion)
+                                        @php
+                                            $dias = (int) now()->diffInDays($suscripcion->fecha_fin, false);
+                                        @endphp
                                         <tr>
                                             <td>
                                                 <span class="badge bg-primary text-capitalize">{{ $suscripcion->tipo }}</span>
@@ -103,6 +116,17 @@
                                                 </span>
                                             </td>
                                             <td>Bs./ {{ number_format($suscripcion->monto_total, 2) }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ $dias < 15 ? 'warning' : 'info' }}">
+                                                    @if($dias > 0)
+                                                        {{ $dias }} días
+                                                    @elseif($dias == 0)
+                                                        Hoy vence
+                                                    @else
+                                                        Vencida
+                                                    @endif
+                                                </span>
+                                            </td>
                                             <td>
                                                 <a href="{{ route('suscripcion.pagos', $suscripcion) }}" class="btn btn-sm btn-outline-info">
                                                     <i class="bi bi-receipt"></i> Pagos

@@ -7,12 +7,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-// Asegúrate de heredar de Controller
 class EdificioController extends Controller
 {
     public function index()
     {
-        // Usar Gate::authorize en lugar de $this->authorize
         Gate::authorize('viewAny', Edificio::class);
 
         if (auth()->user()->rol === 'administrador') {

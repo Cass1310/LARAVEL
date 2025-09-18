@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResidenteController;
 use App\Http\Controllers\PropietarioController;
 use App\Http\Controllers\SuscripcionController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -109,5 +110,51 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/suscripcion/{suscripcion}/cancelar', [SuscripcionController::class, 'cancelar'])->name('suscripcion.cancelar');
     Route::get('/suscripcion/{suscripcion}/pagos', [SuscripcionController::class, 'pagos'])->name('suscripcion.pagos');
     Route::post('/suscripcion/{suscripcion}/pagos/{pago}/pagar', [SuscripcionController::class, 'pagarPago'])->name('suscripcion.pagos.pagar');
+});
+// Rutas para administrador
+Route::middleware(['auth', 'verified', 'role:administrador'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    
+    // Usuarios
+    Route::get('/usuarios', [AdminController::class, 'usuarios'])->name('usuarios');
+    Route::get('/usuarios/crear', [AdminController::class, 'crearUsuario'])->name('usuarios.crear');
+    Route::post('/usuarios', [AdminController::class, 'guardarUsuario'])->name('usuarios.guardar');
+    Route::get('/usuarios/{user}/editar', [AdminController::class, 'editarUsuario'])->name('usuarios.editar');
+    Route::put('/usuarios/{user}', [AdminController::class, 'actualizarUsuario'])->name('usuarios.actualizar');
+    Route::delete('/usuarios/{user}', [AdminController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
+    
+    // Edificios
+    Route::get('/edificios', [AdminController::class, 'edificios'])->name('edificios');
+    Route::get('/edificios/crear', [AdminController::class, 'crearEdificio'])->name('edificios.crear');
+    Route::post('/edificios', [AdminController::class, 'guardarEdificio'])->name('edificios.guardar');
+    
+    // Departamentos
+    Route::get('/departamentos/crear', [AdminController::class, 'crearDepartamento'])->name('departamentos.crear');
+    Route::post('/departamentos', [AdminController::class, 'guardarDepartamento'])->name('departamentos.guardar');
+    
+    // Medidores
+    Route::get('/medidores/crear', [AdminController::class, 'crearMedidor'])->name('medidores.crear');
+    Route::post('/medidores', [AdminController::class, 'guardarMedidor'])->name('medidores.guardar');
+    
+    // Gateways
+    Route::get('/gateways/crear', [AdminController::class, 'crearGateway'])->name('gateways.crear');
+    Route::post('/gateways', [AdminController::class, 'guardarGateway'])->name('gateways.guardar');
+    
+    // Suscripciones
+    Route::get('/suscripciones', [AdminController::class, 'suscripciones'])->name('suscripciones');
+    Route::get('/suscripciones/{suscripcion}/pagos', [AdminController::class, 'gestionarPagosSuscripcion'])->name('suscripciones.pagos');
+    Route::post('/suscripciones/{suscripcion}/pagos', [AdminController::class, 'registrarPagoSuscripcion'])->name('suscripciones.pagos.registrar');
+    
+    // Alertas
+    Route::get('/alertas', [AdminController::class, 'alertas'])->name('alertas');
+    Route::post('/alertas/{alerta}/resolver', [AdminController::class, 'resolverAlerta'])->name('alertas.resolver');
+    
+    // Mantenimientos
+    Route::get('/mantenimientos', [AdminController::class, 'mantenimientos'])->name('mantenimientos');
+    Route::post('/mantenimientos/{mantenimiento}/completar', [AdminController::class, 'completarMantenimiento'])->name('mantenimientos.completar');
+    
+    // Reportes
+    Route::get('/reportes', [AdminController::class, 'reportes'])->name('reportes');
 });
 require __DIR__.'/auth.php';

@@ -66,8 +66,20 @@
                             <x-nav-link :href="route('admin.usuarios')" :active="request()->routeIs('admin.usuarios*')">
                                 {{ __('Usuarios') }}
                             </x-nav-link>
+                            <x-nav-link :href="route('admin.edificios')" :active="request()->routeIs('admin.edificios*')">
+                                {{ __('Edificios') }}
+                            </x-nav-link>
                             <x-nav-link :href="route('admin.suscripciones')" :active="request()->routeIs('admin.suscripciones*')">
                                 {{ __('Suscripciones') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('admin.alertas')" :active="request()->routeIs('admin.alertas')">
+                                {{ __('Alertas') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('admin.mantenimientos')" :active="request()->routeIs('admin.mantenimientos')">
+                                {{ __('Mantenimientos') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('admin.reportes')" :active="request()->routeIs('admin.reportes')">
+                                {{ __('Reportes') }}
                             </x-nav-link>
                         @endif
                     @endauth

@@ -46,12 +46,12 @@ class User extends Authenticatable
     }
     public function creador()
     {
-        return $this->belongsTo(User::class, 'created_by', 'id_usuario');
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
 
     public function usuariosCreados()
     {
-        return $this->hasMany(User::class, 'created_by', 'id_usuario');
+        return $this->hasMany(User::class, 'created_by', 'id');
     }
 
     public function scopeAdministradores($query)

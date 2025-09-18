@@ -43,5 +43,4 @@ class Departamento extends Model
     {
         return $this->hasMany(FacturaDepartamento::class, 'id_departamento');
     }
-    
 }

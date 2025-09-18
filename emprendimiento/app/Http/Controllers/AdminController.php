@@ -8,10 +8,10 @@ use App\Models\Suscripcion;
 use App\Models\Alerta;
 use App\Models\Mantenimiento;
 use App\Models\ConsumoAgua;
-use App\Models\SuscripcionPago;
-use App\Models\Gateway;
-use App\Models\Medidor;
 use App\Models\FacturaEdificio;
+use App\Models\SuscripcionPago;
+use App\Models\Medidor;
+use App\Models\Gateway;
 use App\Models\Departamento;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -58,8 +58,19 @@ class AdminController extends Controller
 
     private function getConsumoGlobal()
     {
-        $currentMonth = now()->month;
         $currentYear = now()->year;
+        $currentMonth = now()->month;
+
+        // Obtener el edificio con mayor consumo de forma correcta
+        $edificioMayorConsumo = Edificio::with(['departamentos.medidores.consumos' => function($query) use ($currentMonth) {
+            $query->whereMonth('fecha_hora', $currentMonth);
+        }])->get()->sortByDesc(function($edificio) {
+            return $edificio->departamentos->sum(function($departamento) {
+                return $departamento->medidores->sum(function($medidor) {
+                    return $medidor->consumos->sum('volumen');
+                });
+            });
+        })->first();
 
         return [
             'consumo_mensual' => ConsumoAgua::whereYear('fecha_hora', $currentYear)
@@ -69,25 +80,20 @@ class AdminController extends Controller
                 ->sum('volumen'),
             'promedio_mensual' => ConsumoAgua::whereYear('fecha_hora', $currentYear)
                 ->average('volumen'),
-            'edificio_mayor_consumo' => Edificio::with(['departamentos.medidores.consumos' => function($query) use ($currentMonth) {
-                $query->whereMonth('fecha_hora', $currentMonth);
-            }])
-            ->get()
-            ->map(function($edificio) {
-                $totalConsumo = 0;
-                foreach ($edificio->departamentos as $departamento) {
-                    foreach ($departamento->medidores as $medidor) {
-                        $totalConsumo += $medidor->consumos->sum('volumen');
-                    }
-                }
-                $edificio->total_consumo = $totalConsumo;
-                return $edificio;
-            })
-            ->sortByDesc('total_consumo')
-            ->first()
+            'edificio_mayor_consumo' => $edificioMayorConsumo
         ];
     }
-    // En AdminController
+    
+
+
+
+
+
+
+
+
+    //---
+    // MÉTODOS DE USUARIOS
     public function usuarios()
     {
         $usuarios = User::with(['creador', 'departamentosResidente', 'edificiosPropietario'])
@@ -124,15 +130,6 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.usuarios')->with('success', 'Usuario creado exitosamente');
-    }
-
-    public function alertas()
-    {
-        $alertas = Alerta::with(['medidor.departamento.edificio.propietario'])
-            ->orderBy('fecha_hora', 'desc')
-            ->paginate(20);
-
-        return view('admin.alertas', compact('alertas'));
     }
 
     // MÉTODOS DE EDIFICIOS
@@ -180,6 +177,14 @@ class AdminController extends Controller
     }
 
     // MÉTODOS DE ALERTAS
+    public function alertas()
+    {
+        $alertas = Alerta::with(['medidor.departamento.edificio.propietario'])
+            ->orderBy( 'fecha_hora', 'desc')
+            ->paginate(20);
+
+        return view('admin.alertas.index', compact('alertas'));
+    }
 
     public function resolverAlerta(Alerta $alerta)
     {

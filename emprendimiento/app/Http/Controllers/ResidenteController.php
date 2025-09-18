@@ -9,6 +9,7 @@ use App\Models\ConsumoAgua;
 use App\Models\FacturaDepartamento;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ResidenteController extends Controller
 {
@@ -92,22 +93,75 @@ class ResidenteController extends Controller
         ));
     }
 
+
+    // ANTERIOR A LA VISTA
+    // private function getConsumoMensual($departamento, $year)
+    // {
+    //     $consumos = ConsumoAgua::whereHas('medidor', function($query) use ($departamento) {
+    //         $query->where('id_departamento', $departamento->id);
+    //     })
+    //     ->selectRaw('MONTH(fecha_hora) as mes, SUM(volumen) as total')
+    //     ->whereYear('fecha_hora', $year)
+    //     ->groupBy('mes')
+    //     ->get();
+
+    //     $data = array_fill(0, 12, 0);
+    //     foreach ($consumos as $consumo) {
+    //         $data[$consumo->mes - 1] = (float) $consumo->total;
+    //     }
+
+    //     return $data;
+    // }
+
+
+    // ACTUAL
     private function getConsumoMensual($departamento, $year)
     {
-        $consumos = ConsumoAgua::whereHas('medidor', function($query) use ($departamento) {
-            $query->where('id_departamento', $departamento->id);
-        })
-        ->selectRaw('MONTH(fecha_hora) as mes, SUM(volumen) as total')
-        ->whereYear('fecha_hora', $year)
-        ->groupBy('mes')
-        ->get();
+        $consumos = DB::table('vw_consumo_mensual_departamento')
+            ->where('id_departamento', $departamento->id)
+            ->where('anio', $year)
+            ->get();
 
         $data = array_fill(0, 12, 0);
+
         foreach ($consumos as $consumo) {
-            $data[$consumo->mes - 1] = (float) $consumo->total;
+            $data[$consumo->mes - 1] = (float) $consumo->total_consumo;
         }
 
         return $data;
+    }
+
+    // TRANSACCION
+    public function solicitarMantenimiento(Request $request)
+    {
+        $request->validate([
+            'id_medidor' => 'required|exists:medidor,id',
+            'tipo' => 'required|in:correctivo,calibracion',
+            'descripcion' => 'required|string|max:200',
+        ]);
+
+        $idMedidor = $request->input('id_medidor');
+        $tipo = $request->input('tipo');
+        $descripcion = $request->input('descripcion');
+        $nuevoEstado = 'activo'; 
+
+        $fecha = now()->toDateString();
+
+        try {
+            DB::statement('CALL registrar_mantenimiento(?, ?, ?, ?, ?, ?, ?)', [
+                $idMedidor,
+                $tipo,
+                'facturado',  
+                0,             
+                $fecha,
+                $descripcion,
+                $nuevoEstado
+            ]);
+
+            return back()->with('success', 'Mantenimiento registrado correctamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al registrar el mantenimiento: ' . $e->getMessage());
+        }
     }
 
     private function getAlertasMensual($departamento, $year)

@@ -14,7 +14,7 @@ use App\Models\ConsumoAgua;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\DB;
 class PropietarioController extends Controller
 {
     public function dashboard()
@@ -378,26 +378,50 @@ class PropietarioController extends Controller
         ];
     }
 
+    // ANTERIOR
+    // private function getConsumoPorEdificio($edificios)
+    // {
+    //     $data = [];
+    //     foreach ($edificios as $edificio) {
+    //         $consumo = $edificio->departamentos->sum(function($departamento) {
+    //             return $departamento->medidores->sum(function($medidor) {
+    //                 return $medidor->consumos()
+    //                     ->whereMonth('fecha_hora', now()->month)
+    //                     ->sum('volumen');
+    //             });
+    //         });
+            
+    //         $data[] = [
+    //             'edificio' => $edificio->nombre,
+    //             'consumo' => $consumo
+    //         ];
+    //     }
+    //     return $data;
+    // }
+
+
+    // ACTUAL
     private function getConsumoPorEdificio($edificios)
     {
         $data = [];
+        $anio = now()->year;
+        $mes = now()->month;
+
         foreach ($edificios as $edificio) {
-            $consumo = $edificio->departamentos->sum(function($departamento) {
-                return $departamento->medidores->sum(function($medidor) {
-                    return $medidor->consumos()
-                        ->whereMonth('fecha_hora', now()->month)
-                        ->sum('volumen');
-                });
-            });
-            
+            $consumo = DB::selectOne('SELECT emprendimiento.fn_consumo_por_edificio(?, ?, ?) AS total', [
+                $edificio->id,
+                $anio,
+                $mes
+            ]);
+
             $data[] = [
                 'edificio' => $edificio->nombre,
-                'consumo' => $consumo
+                'consumo' => (float) $consumo->total
             ];
         }
+
         return $data;
     }
-
     private function getFacturasData($edificios)
     {
         $currentYear = now()->year;

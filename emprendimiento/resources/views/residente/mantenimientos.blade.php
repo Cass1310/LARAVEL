@@ -16,7 +16,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form action="#" method="POST">
+                        <form action="{{ route('residente.solicitar.mantenimiento') }}" method="POST">
                             @csrf
                             <div class="row g-3">
                                 <div class="col-md-6">

@@ -79,6 +79,8 @@ Route::middleware(['auth', 'verified', 'role:residente'])->prefix('residente')->
     Route::get('/alertas', [ResidenteController::class, 'alertas'])->name('alertas');
     Route::get('/mantenimientos', [ResidenteController::class, 'mantenimientos'])->name('mantenimientos');
     Route::get('/reportes', [ResidenteController::class, 'reportes'])->name('reportes');
+    Route::post('/mantenimiento', [ResidenteController::class, 'solicitarMantenimiento'])
+    ->name('solicitar.mantenimiento');
 });
 
 // Rutas para propietarios

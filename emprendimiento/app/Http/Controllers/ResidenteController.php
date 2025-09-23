@@ -93,43 +93,41 @@ class ResidenteController extends Controller
         ));
     }
 
-
-    // ANTERIOR A LA VISTA
-    // private function getConsumoMensual($departamento, $year)
-    // {
-    //     $consumos = ConsumoAgua::whereHas('medidor', function($query) use ($departamento) {
-    //         $query->where('id_departamento', $departamento->id);
-    //     })
-    //     ->selectRaw('MONTH(fecha_hora) as mes, SUM(volumen) as total')
-    //     ->whereYear('fecha_hora', $year)
-    //     ->groupBy('mes')
-    //     ->get();
-
-    //     $data = array_fill(0, 12, 0);
-    //     foreach ($consumos as $consumo) {
-    //         $data[$consumo->mes - 1] = (float) $consumo->total;
-    //     }
-
-    //     return $data;
-    // }
-
-
-    // ACTUAL
     private function getConsumoMensual($departamento, $year)
     {
-        $consumos = DB::table('vw_consumo_mensual_departamento')
-            ->where('id_departamento', $departamento->id)
-            ->where('anio', $year)
-            ->get();
+        $consumos = ConsumoAgua::whereHas('medidor', function($query) use ($departamento) {
+            $query->where('id_departamento', $departamento->id);
+        })
+        ->selectRaw('MONTH(fecha_hora) as mes, SUM(volumen) as total')
+        ->whereYear('fecha_hora', $year)
+        ->groupBy('mes')
+        ->get();
 
         $data = array_fill(0, 12, 0);
-
         foreach ($consumos as $consumo) {
-            $data[$consumo->mes - 1] = (float) $consumo->total_consumo;
+            $data[$consumo->mes - 1] = (float) $consumo->total;
         }
 
         return $data;
     }
+
+
+    // ACTUAL
+    // private function getConsumoMensual($departamento, $year)
+    // {
+    //     $consumos = DB::table('vw_consumo_mensual_departamento')
+    //         ->where('id_departamento', $departamento->id)
+    //         ->where('anio', $year)
+    //         ->get();
+
+    //     $data = array_fill(0, 12, 0);
+
+    //     foreach ($consumos as $consumo) {
+    //         $data[$consumo->mes - 1] = (float) $consumo->total_consumo;
+    //     }
+
+    //     return $data;
+    // }
 
     // TRANSACCION
     public function solicitarMantenimiento(Request $request)

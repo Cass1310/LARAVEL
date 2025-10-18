@@ -5,17 +5,13 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="#">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">                    
                     @auth
                         @if(Auth::user()->rol === 'residente')
                             <x-nav-link :href="route('residente.dashboard')" :active="request()->routeIs('residente.dashboard')">
@@ -92,7 +88,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <!-- Suscripción Link -->
                 @auth
-                    @if(in_array(Auth::user()->rol, ['propietario', 'administrador']))
+                    @if(in_array(Auth::user()->rol, ['propietario']))
                         <x-nav-link :href="route('suscripcion.index')" :active="request()->routeIs('suscripcion*')" class="me-4">
                             <i class="bi bi-credit-card me-1"></i>{{ __('Suscripción') }}
                         </x-nav-link>
@@ -123,7 +119,7 @@
                             <i class="bi bi-person me-2"></i>{{ __('Perfil') }}
                         </x-dropdown-link>
 
-                        @if(in_array(Auth::user()->rol, ['propietario', 'administrador']))
+                        @if(in_array(Auth::user()->rol, ['propietario']))
                             <x-dropdown-link :href="route('suscripcion.index')">
                                 <i class="bi bi-credit-card me-2"></i>{{ __('Mi Suscripción') }}
                             </x-dropdown-link>
@@ -229,7 +225,7 @@
                     <i class="bi bi-person me-2"></i>{{ __('Perfil') }}
                 </x-responsive-nav-link>
 
-                @if(in_array(Auth::user()->rol, ['propietario', 'administrador']))
+                @if(in_array(Auth::user()->rol, ['propietario']))
                     <x-responsive-nav-link :href="route('suscripcion.index')">
                         <i class="bi bi-credit-card me-2"></i>{{ __('Suscripción') }}
                     </x-responsive-nav-link>

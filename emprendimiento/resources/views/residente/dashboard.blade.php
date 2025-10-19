@@ -72,12 +72,12 @@
 
                     <!-- Información de consumo -->
                     <div class="col-12 col-lg-6">
-                        <div class="card shadow-sm p-3 h-100">
+                        <div class="card shadow-sm p-3 h-90">
                             <h5 class="fw-semibold mb-3">Estado de consumo</h5>
                             @if($consumo)
                                 <div class="d-flex flex-column gap-2">
                                     <div>
-                                        <small class="text-muted">Período</small>
+                                        <small class="text-muted">Periodo</small>
                                         <p class="fw-semibold mb-0">{{ $consumo->consumoEdificio->periodo }}</p>
                                     </div>
                                     <div>
@@ -96,11 +96,6 @@
                                         <small class="text-muted">Consumo del mes</small>
                                         <p class="fw-semibold mb-0">{{ $consumo->consumo_m3 }} m³ ({{ $consumo->porcentaje_consumo }}%)</p>
                                     </div>
-                                    @if($consumo->estado == 'pendiente')
-                                        <button class="btn btn-primary mt-2">
-                                            Pagar consumo
-                                        </button>
-                                    @endif
                                 </div>
                             @else
                                 <p class="text-muted mb-0">No hay consumo para el mes actual.</p>

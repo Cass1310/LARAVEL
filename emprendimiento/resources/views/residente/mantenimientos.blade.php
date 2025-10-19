@@ -33,6 +33,7 @@
                                     <select class="form-select" name="tipo" required>
                                         <option value="">Seleccionar tipo</option>
                                         <option value="correctivo">Correctivo</option>
+                                        <option value="preventivo">Preventivo</option>
                                         <option value="calibracion">Calibración</option>
                                     </select>
                                 </div>

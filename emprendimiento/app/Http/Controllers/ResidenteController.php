@@ -134,7 +134,7 @@ class ResidenteController extends Controller
     {
         $request->validate([
             'id_medidor' => 'required|exists:medidor,id',
-            'tipo' => 'required|in:correctivo,calibracion',
+            'tipo' => 'required|in:correctivo,calibracion,preventivo',
             'descripcion' => 'required|string|max:200',
         ]);
 
@@ -143,7 +143,7 @@ class ResidenteController extends Controller
         $descripcion = $request->input('descripcion');
         $nuevoEstado = 'activo'; 
 
-        $fecha = now()->toDateString();
+        $fecha = now()->addDays(7)->toDateString();
 
         try {
             DB::statement('CALL registrar_mantenimiento(?, ?, ?, ?, ?, ?, ?)', [

@@ -31,9 +31,25 @@
                                             <td>{{ $alerta->fecha_hora->format('d/m/Y H:i') }}</td>
                                             <td>{{ $alerta->medidor->departamento->numero_departamento }}</td>
                                             <td>{{ $alerta->medidor->codigo_lorawan }}</td>
-                                            <td>{{ ucfirst($alerta->tipo_alerta) }}</td>
+                                            <td>
+                                                @switch($alerta->tipo_alerta)
+                                                    @case('fuga')
+                                                        <span class="badge bg-danger">Fuga</span>
+                                                        @break
+                                                    @case('consumo_brusco')
+                                                        <span class="badge bg-warning text-dark">Consumo Brusco</span>
+                                                        @break
+                                                    @case('consumo_excesivo')
+                                                        <span class="badge bg-info">Consumo Excesivo</span>
+                                                        @break
+                                                @endswitch
+                                            </td>
                                             <td>{{ number_format($alerta->valor_detectado, 2) }} m³</td>
-                                            <td>{{ ucfirst($alerta->estado) }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ $alerta->estado == 'pendiente' ? 'warning' : ($alerta->estado == 'atendida' ? 'info' : 'success') }}">
+                                                    {{ ucfirst($alerta->estado) }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

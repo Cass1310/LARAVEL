@@ -11,39 +11,44 @@
                 <!-- Filtros -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <form class="row g-3">
+                        <form class="row g-3" method="GET" action="{{ route('residente.alertas') }}">
                             <div class="col-md-3">
                                 <label class="form-label">Estado</label>
                                 <select class="form-select" name="estado">
                                     <option value="">Todos</option>
-                                    <option value="pendiente">Pendientes</option>
-                                    <option value="atendida">Atendidas</option>
-                                    <option value="resuelta">Resueltas</option>
+                                    <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendientes</option>
+                                    <option value="atendida" {{ request('estado') == 'atendida' ? 'selected' : '' }}>Atendidas</option>
+                                    <option value="resuelta" {{ request('estado') == 'resuelta' ? 'selected' : '' }}>Resueltas</option>
                                 </select>
                             </div>
+
                             <div class="col-md-3">
                                 <label class="form-label">Tipo</label>
                                 <select class="form-select" name="tipo">
                                     <option value="">Todos</option>
-                                    <option value="fuga">Fuga</option>
-                                    <option value="consumo_brusco">Consumo Brusco</option>
-                                    <option value="consumo_excesivo">Consumo Excesivo</option>
+                                    <option value="fuga" {{ request('tipo') == 'fuga' ? 'selected' : '' }}>Fuga</option>
+                                    <option value="consumo_brusco" {{ request('tipo') == 'consumo_brusco' ? 'selected' : '' }}>Consumo Brusco</option>
+                                    <option value="consumo_excesivo" {{ request('tipo') == 'consumo_excesivo' ? 'selected' : '' }}>Consumo Excesivo</option>
                                 </select>
                             </div>
+
                             <div class="col-md-3">
                                 <label class="form-label">Fecha Desde</label>
-                                <input type="date" class="form-control" name="fecha_desde">
+                                <input type="date" class="form-control" name="fecha_desde" value="{{ request('fecha_desde') }}">
                             </div>
+
                             <div class="col-md-3">
                                 <label class="form-label">Fecha Hasta</label>
-                                <input type="date" class="form-control" name="fecha_hasta">
+                                <input type="date" class="form-control" name="fecha_hasta" value="{{ request('fecha_hasta') }}">
                             </div>
+
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-filter me-1"></i>Filtrar
                                 </button>
                             </div>
                         </form>
+
                     </div>
                 </div>
 
@@ -94,7 +99,7 @@
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#alertaModal{{ $alerta->id }}">
-                                                        <i class="bi bi-eye me-2"></i>
+                                                        <i class="bi bi-eye me-2"> Ver</i>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -127,7 +132,7 @@
 
                             <!-- Paginación -->
                             <div class="d-flex justify-content-center mt-4">
-                                {{ $alertas->links() }}
+                                {{ $alertas->appends(request()->query())->links() }}
                             </div>
                         @else
                             <div class="alert alert-info">

@@ -28,8 +28,7 @@ class ResidenteController extends Controller
 
         return view('residente.departamento', compact('departamento'));
     }
-
-    public function alertas()
+    public function alertas(Request $request)
     {
         $user = auth()->user();
         $departamento = $user->departamentosResidente()
@@ -39,11 +38,28 @@ class ResidenteController extends Controller
             })
             ->firstOrFail();
 
-        $alertas = Alerta::whereHas('medidor', function($query) use ($departamento) {
+        $query = Alerta::whereHas('medidor', function($query) use ($departamento) {
             $query->where('id_departamento', $departamento->id);
-        })->with('medidor')
-        ->orderBy('fecha_hora', 'desc')
-        ->paginate(10);
+        })->with('medidor');
+
+        // FILTROS
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->filled('tipo')) {
+            $query->where('tipo_alerta', $request->tipo);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('fecha_hora', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('fecha_hora', '<=', $request->fecha_hasta);
+        }
+
+        $alertas = $query->orderBy('fecha_hora', 'desc')->paginate(10);
 
         return view('residente.alertas', compact('alertas', 'departamento'));
     }

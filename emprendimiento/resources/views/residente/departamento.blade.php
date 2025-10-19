@@ -36,7 +36,7 @@
                 <div class="card mb-4">
                     <div class="card-header bg-success text-white">
                         <h5 class="card-title mb-0">
-                            <i class="bi bi-speedometer2 me-2"></i>Medidores Asociados
+                            <i class="bi bi-speedometer2 me-2"></i>Medidor Asociado
                         </h5>
                     </div>
                     <div class="card-body">

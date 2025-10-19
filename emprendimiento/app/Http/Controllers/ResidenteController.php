@@ -153,20 +153,25 @@ class ResidenteController extends Controller
             'tipo' => 'required|in:correctivo,calibracion,preventivo',
             'descripcion' => 'required|string|max:200',
         ]);
-
         $idMedidor = $request->input('id_medidor');
         $tipo = $request->input('tipo');
         $descripcion = $request->input('descripcion');
         $nuevoEstado = 'activo'; 
 
         $fecha = now()->addDays(7)->toDateString();
-
+        if($tipo == 'preventivo'){
+            $pago = 60;
+        }else if($tipo == 'correctivo'){
+            $pago = 100;
+        }else{
+            $pago = 80;
+        }
         try {
             DB::statement('CALL registrar_mantenimiento(?, ?, ?, ?, ?, ?, ?)', [
                 $idMedidor,
                 $tipo,
                 'cobrado',  
-                0,             
+                $pago,             
                 $fecha,
                 $descripcion,
                 $nuevoEstado

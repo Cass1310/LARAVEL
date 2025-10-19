@@ -73,7 +73,7 @@
                     <!-- Información de consumo -->
                     <div class="col-12 col-lg-6">
                         <div class="card shadow-sm p-3 h-90">
-                            <h5 class="fw-semibold mb-3">Estado de consumo</h5>
+                            <h5 class="fw-semibold mb-3">Estado de Nota de Consumo</h5>
                             @if($consumo)
                                 <div class="d-flex flex-column gap-2">
                                     <div>

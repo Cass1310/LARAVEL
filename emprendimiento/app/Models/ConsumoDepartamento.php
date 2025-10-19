@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FacturaDepartamento extends Model
+class ConsumoDepartamento extends Model
 {
     use HasFactory;
 
-    protected $table = 'factura_departamento';
+    protected $table = 'consumo_departamento';
 
     protected $fillable = [
-        'id_factura',
+        'id_consumo',
         'id_departamento',
         'monto_asignado',
         'consumo_m3',
@@ -28,9 +28,9 @@ class FacturaDepartamento extends Model
         'fecha_pago' => 'date',
     ];
 
-    public function facturaEdificio()
+    public function consumoEdificio()
     {
-        return $this->belongsTo(FacturaEdificio::class, 'id_factura');
+        return $this->belongsTo(ConsumoEdificio::class, 'id_consumo');
     }
 
     public function departamento()

@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-                <!-- Gráfica de consumo y factura -->
+                <!-- Gráfica de consumo y consumo -->
                 <div class="row g-4 mb-4">
                     <!-- Gráfica de consumo -->
                     <div class="col-12 col-lg-6">
@@ -70,40 +70,40 @@
                         </div>
                     </div>
 
-                    <!-- Información de factura -->
+                    <!-- Información de consumo -->
                     <div class="col-12 col-lg-6">
                         <div class="card shadow-sm p-3 h-100">
-                            <h5 class="fw-semibold mb-3">Estado de Factura</h5>
-                            @if($factura)
+                            <h5 class="fw-semibold mb-3">Estado de consumo</h5>
+                            @if($consumo)
                                 <div class="d-flex flex-column gap-2">
                                     <div>
                                         <small class="text-muted">Período</small>
-                                        <p class="fw-semibold mb-0">{{ $factura->facturaEdificio->periodo }}</p>
+                                        <p class="fw-semibold mb-0">{{ $consumo->consumoEdificio->periodo }}</p>
                                     </div>
                                     <div>
                                         <small class="text-muted">Monto a Pagar</small>
-                                        <p class="fs-4 fw-bold text-primary mb-0">Bs./ {{ number_format($factura->monto_asignado, 2) }}</p>
+                                        <p class="fs-4 fw-bold text-primary mb-0">Bs./ {{ number_format($consumo->monto_asignado, 2) }}</p>
                                     </div>
                                     <div>
                                         <small class="text-muted">Estado</small>
                                         <span class="badge 
-                                            {{ $factura->estado == 'pagado' ? 'bg-success' : 
-                                               ($factura->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-danger') }}">
-                                            {{ ucfirst($factura->estado) }}
+                                            {{ $consumo->estado == 'pagado' ? 'bg-success' : 
+                                               ($consumo->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-danger') }}">
+                                            {{ ucfirst($consumo->estado) }}
                                         </span>
                                     </div>
                                     <div>
                                         <small class="text-muted">Consumo del mes</small>
-                                        <p class="fw-semibold mb-0">{{ $factura->consumo_m3 }} m³ ({{ $factura->porcentaje_consumo }}%)</p>
+                                        <p class="fw-semibold mb-0">{{ $consumo->consumo_m3 }} m³ ({{ $consumo->porcentaje_consumo }}%)</p>
                                     </div>
-                                    @if($factura->estado == 'pendiente')
+                                    @if($consumo->estado == 'pendiente')
                                         <button class="btn btn-primary mt-2">
-                                            Pagar Factura
+                                            Pagar consumo
                                         </button>
                                     @endif
                                 </div>
                             @else
-                                <p class="text-muted mb-0">No hay factura para el mes actual.</p>
+                                <p class="text-muted mb-0">No hay consumo para el mes actual.</p>
                             @endif
                         </div>
                     </div>

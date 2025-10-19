@@ -4,7 +4,7 @@ namespace App\Policies;
 
 use App\Models\Edificio;
 use App\Models\User;
-use App\Models\FacturaEdificio;
+use App\Models\ConsumoEdificio;
 use Illuminate\Auth\Access\Response;
 
 class EdificioPolicy
@@ -35,14 +35,14 @@ class EdificioPolicy
     {
         return $user->rol === 'administrador';
     }
-    public function createFactura(User $user, Edificio $edificio): bool
+    public function createConsumo(User $user, Edificio $edificio): bool
     {
         return $user->rol === 'propietario' && $edificio->id_propietario === $user->id;
     }
 
-    public function payFactura(User $user, FacturaEdificio $factura): bool
+    public function payConsumo(User $user, ConsumoEdificio $consumo): bool
     {
-        return $user->rol === 'propietario' && $factura->edificio->id_propietario === $user->id;
+        return $user->rol === 'propietario' && $consumo->edificio->id_propietario === $user->id;
     }
 
     public function manageResidentes(User $user, Edificio $edificio): bool

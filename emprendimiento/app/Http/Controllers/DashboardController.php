@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FacturaDepartamento;
+use App\Models\ConsumoDepartamento;
 use App\Models\ConsumoAgua;
 use App\Models\Alerta;
 use App\Models\Mantenimiento;
@@ -42,12 +42,12 @@ class DashboardController extends Controller
 
         // Datos para la gráfica de consumo
         $consumoData = $this->getConsumoData($departamento);
-        $facturaActual = $this->getFacturaActual($departamento);
+        $consumoActual = $this->getConsumoActual($departamento);
         $metricas = $this->getMetricas($departamento);
 
         return view('residente.dashboard', [
             'departamento' => $departamento,
-            'factura' => $facturaActual,
+            'consumo' => $consumoActual,
             'consumoData' => $consumoData,
             'metricas' => $metricas,
             'sin_departamento' => false
@@ -83,15 +83,15 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getFacturaActual($departamento)
+    private function getConsumoActual($departamento)
     {
         $currentMonth = now()->format('Y-m');
         
-        return FacturaDepartamento::where('id_departamento', $departamento->id)
-            ->whereHas('facturaEdificio', function($query) use ($currentMonth) {
+        return ConsumoDepartamento::where('id_departamento', $departamento->id)
+            ->whereHas('consumoEdificio', function($query) use ($currentMonth) {
                 $query->where('periodo', $currentMonth);
             })
-            ->with('facturaEdificio')
+            ->with('consumoEdificio')
             ->first();
     }
 

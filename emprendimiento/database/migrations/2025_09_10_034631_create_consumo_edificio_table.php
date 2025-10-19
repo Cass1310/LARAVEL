@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('factura_edificio', function (Blueprint $table) {
+        Schema::create('consumo_edificio', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_edificio')->constrained('edificio');
             $table->string('periodo', 20); // ej: '2025-08'
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('factura_edificio');
+        Schema::dropIfExists('consumo_edificio');
     }
 };

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_medidor')->constrained('medidor');
             $table->enum('tipo', ['preventivo', 'correctivo', 'instalacion', 'calibracion']);
-            $table->enum('cobertura', ['incluido_suscripcion', 'facturado']);
+            $table->enum('cobertura', ['incluido_suscripcion', 'cobrado']);
             $table->decimal('costo', 12, 2)->default(0.00);
             $table->date('fecha');
             $table->string('descripcion', 200)->nullable();

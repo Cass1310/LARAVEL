@@ -39,8 +39,8 @@ class Departamento extends Model
                     ->withPivot('fecha_inicio', 'fecha_fin')
                     ->withTimestamps();
     }
-    public function facturas()
+    public function consumos()
     {
-        return $this->hasMany(FacturaDepartamento::class, 'id_departamento');
+        return $this->hasMany(ConsumoDepartamento::class, 'id_departamento');
     }
 }

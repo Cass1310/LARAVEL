@@ -3,8 +3,8 @@ use App\Http\Controllers\EdificioController;
 use App\Http\Controllers\DepartamentoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\FacturaDepartamentoController;
-use App\Http\Controllers\FacturaEdificioController;
+use App\Http\Controllers\ConsumoDepartamentoController;
+use App\Http\Controllers\ConsumoEdificioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResidenteController;
 use App\Http\Controllers\PropietarioController;
@@ -45,26 +45,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('departamentos', DepartamentoController::class)->middleware('can:viewAny,App\Models\Departamento');
 });
 
-// Rutas de facturas
+// Rutas de consumos
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // Facturas de edificio
-    Route::resource('facturas-edificio', FacturaEdificioController::class)
-        ->middleware('can:viewAny,App\Models\FacturaEdificio');
+    // Consumos de edificio
+    Route::resource('consumos-edificio', ConsumoEdificioController::class)
+        ->middleware('can:viewAny,App\Models\ConsumoEdificio');
     
-    Route::post('facturas-edificio/{facturaEdificio}/pay', [FacturaEdificioController::class, 'markAsPaid'])
-        ->name('facturas-edificio.pay');
+    Route::post('consumos-edificio/{consumoEdificio}/pay', [ConsumoEdificioController::class, 'markAsPaid'])
+        ->name('consumos-edificio.pay');
 
-    // Facturas de departamento
-    Route::get('facturas-departamento', [FacturaDepartamentoController::class, 'index'])
-        ->name('facturas-departamento.index')
-        ->middleware('can:viewAny,App\Models\FacturaDepartamento');
+    // Consumos de departamento
+    Route::get('consumos-departamento', [ConsumoDepartamentoController::class, 'index'])
+        ->name('consumos-departamento.index')
+        ->middleware('can:viewAny,App\Models\ConsumoDepartamento');
     
-    Route::get('facturas-departamento/{facturaDepartamento}', [FacturaDepartamentoController::class, 'show'])
-        ->name('facturas-departamento.show');
+    Route::get('consumos-departamento/{consumoDepartamento}', [ConsumoDepartamentoController::class, 'show'])
+        ->name('consumos-departamento.show');
     
-    Route::post('facturas-departamento/{facturaDepartamento}/pay', [FacturaDepartamentoController::class, 'pay'])
-        ->name('facturas-departamento.pay');
+    Route::post('consumos-departamento/{consumoDepartamento}/pay', [ConsumoDepartamentoController::class, 'pay'])
+        ->name('consumos-departamento.pay');
 });
 
 
@@ -84,10 +84,10 @@ Route::middleware(['auth', 'verified', 'role:propietario'])->prefix('propietario
     Route::get('/dashboard', [PropietarioController::class, 'dashboard'])->name('dashboard');
     Route::get('/edificios', [PropietarioController::class, 'edificios'])->name('edificios');
     Route::get('/edificios/{edificio}', [PropietarioController::class, 'edificioShow'])->name('edificios.show');
-    Route::get('/facturas', [PropietarioController::class, 'facturas'])->name('facturas');
-    Route::get('/facturas/crear', [PropietarioController::class, 'crearFactura'])->name('facturas.crear');
-    Route::post('/facturas', [PropietarioController::class, 'guardarFactura'])->name('facturas.guardar');
-    Route::post('/facturas/{factura}/pagar', [PropietarioController::class, 'pagarFactura'])->name('facturas.pagar');
+    Route::get('/consumos', [PropietarioController::class, 'consumos'])->name('consumos');
+    Route::get('/consumos/crear', [PropietarioController::class, 'crearConsumo'])->name('consumos.crear');
+    Route::post('/consumos', [PropietarioController::class, 'guardarConsumo'])->name('consumos.guardar');
+    Route::post('/consumos/{consumo}/pagar', [PropietarioController::class, 'pagarConsumo'])->name('consumos.pagar');
     Route::get('/residentes', [PropietarioController::class, 'residentes'])->name('residentes');
     Route::get('/residentes/crear', [PropietarioController::class, 'crearResidente'])->name('residentes.crear');
     Route::post('/residentes', [PropietarioController::class, 'guardarResidente'])->name('residentes.guardar');

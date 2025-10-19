@@ -38,8 +38,8 @@
                             <x-nav-link :href="route('propietario.edificios')" :active="request()->routeIs('propietario.edificios')">
                                 {{ __('Mis Edificios') }}
                             </x-nav-link>
-                            <x-nav-link :href="route('propietario.facturas')" :active="request()->routeIs('propietario.facturas*')">
-                                {{ __('Facturación') }}
+                            <x-nav-link :href="route('propietario.consumos')" :active="request()->routeIs('propietario.consumos*')">
+                                {{ __('Consumos') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.residentes')" :active="request()->routeIs('propietario.residentes*')">
                                 {{ __('Residentes') }}
@@ -179,8 +179,8 @@
                     <x-responsive-nav-link :href="route('propietario.edificios')" :active="request()->routeIs('propietario.edificios')">
                         {{ __('Mis Edificios') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('propietario.facturas')" :active="request()->routeIs('propietario.facturas*')">
-                        {{ __('Facturación') }}
+                    <x-responsive-nav-link :href="route('propietario.consumos')" :active="request()->routeIs('propietario.consumos*')">
+                        {{ __('Consumos') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('propietario.residentes')" :active="request()->routeIs('propietario.residentes*')">
                         {{ __('Residentes') }}

@@ -2,29 +2,29 @@
 
 namespace App\Policies;
 
-use App\Models\FacturaDepartamento;
+use App\Models\ConsumoDepartamento;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class FacturaDepartamentoPolicy
+class ConsumoDepartamentoPolicy
 {
     public function viewAny(User $user): bool
     {
         return in_array($user->rol, ['administrador', 'propietario', 'residente']);
     }
 
-    public function view(User $user, FacturaDepartamento $factura): bool
+    public function view(User $user, ConsumoDepartamento $consumo): bool
     {
         if ($user->rol === 'administrador') {
             return true;
         }
 
         if ($user->rol === 'propietario') {
-            return $factura->facturaEdificio->edificio->id_propietario === $user->id;
+            return $consumo->consumoEdificio->edificio->id_propietario === $user->id;
         }
 
         if ($user->rol === 'residente') {
-            return $factura->departamento->residentes->contains('id', $user->id);
+            return $consumo->departamento->residentes->contains('id', $user->id);
         }
 
         return false;
@@ -35,24 +35,24 @@ class FacturaDepartamentoPolicy
         return $user->rol === 'administrador';
     }
 
-    public function update(User $user, FacturaDepartamento $factura): bool
+    public function update(User $user, ConsumoDepartamento $consumo): bool
     {
         return $user->rol === 'administrador';
     }
 
-    public function delete(User $user, FacturaDepartamento $factura): bool
+    public function delete(User $user, ConsumoDepartamento $consumo): bool
     {
         return $user->rol === 'administrador';
     }
 
-    public function pay(User $user, FacturaDepartamento $factura): bool
+    public function pay(User $user, ConsumoDepartamento $consumo): bool
     {
         if ($user->rol === 'administrador') {
             return true;
         }
 
         if ($user->rol === 'residente') {
-            return $factura->departamento->residentes->contains('id', $user->id);
+            return $consumo->departamento->residentes->contains('id', $user->id);
         }
 
         return false;

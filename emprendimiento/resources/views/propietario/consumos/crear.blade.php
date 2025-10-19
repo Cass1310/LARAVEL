@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="h4 font-semibold text-gray-800 dark:text-gray-200">
-            {{ __('Crear Factura') }}
+            {{ __('Crear Consumo') }}
         </h2>
     </x-slot>
 
@@ -9,10 +9,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Nueva Factura</h5>
+                    <h5 class="card-title mb-0">Nueva Consumo</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('propietario.facturas.guardar') }}" method="POST">
+                    <form action="{{ route('propietario.consumos.guardar') }}" method="POST">
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -42,9 +42,9 @@
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-circle me-1"></i>Crear Factura
+                                    <i class="bi bi-check-circle me-1"></i>Crear Consumo
                                 </button>
-                                <a href="{{ route('propietario.facturas') }}" class="btn btn-secondary">
+                                <a href="{{ route('propietario.consumos') }}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left me-1"></i>Cancelar
                                 </a>
                             </div>

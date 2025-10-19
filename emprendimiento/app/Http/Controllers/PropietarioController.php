@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Edificio;
-use App\Models\FacturaEdificio;
-use App\Models\FacturaDepartamento;
+use App\Models\ConsumoEdificio;
+use App\Models\ConsumoDepartamento;
 use App\Models\User;
 use App\Models\Alerta;
 use App\Models\Medidor;
@@ -27,13 +27,13 @@ class PropietarioController extends Controller
 
         $metricas = $this->getMetricasPropietario($edificios);
         $consumoPorEdificio = $this->getConsumoPorEdificio($edificios);
-        $facturasData = $this->getFacturasData($edificios);
+        $consumosData = $this->getConsumosData($edificios);
 
         return view('propietario.dashboard', compact(
             'edificios', 
             'metricas', 
             'consumoPorEdificio',
-            'facturasData'
+            'consumosData'
         ));
     }
 
@@ -57,28 +57,28 @@ class PropietarioController extends Controller
         return view('propietario.edificio-show', compact('edificio'));
     }
 
-    // MÉTODOS PARA FACTURAS
-    public function facturas()
+    // MÉTODOS PARA consumoS
+    public function consumos()
     {
         $user = auth()->user();
-        $facturas = FacturaEdificio::whereHas('edificio', function($query) use ($user) {
+        $consumos = ConsumoEdificio::whereHas('edificio', function($query) use ($user) {
             $query->where('id_propietario', $user->id);
-        })->with(['edificio', 'facturasDepartamento.departamento'])
+        })->with(['edificio', 'consumosDepartamento.departamento'])
           ->orderBy('fecha_emision', 'desc')
           ->get();
 
-        return view('propietario.facturas.index', compact('facturas'));
+        return view('propietario.consumos.index', compact('consumos'));
     }
 
-    public function crearFactura()
+    public function crearConsumo()
     {
         $user = auth()->user();
         $edificios = Edificio::where('id_propietario', $user->id)->get();
         
-        return view('propietario.facturas.crear', compact('edificios'));
+        return view('propietario.consumos.crear', compact('edificios'));
     }
 
-    public function guardarFactura(Request $request)
+    public function guardarConsumo(Request $request)
     {
         $validated = $request->validate([
             'id_edificio' => 'required|exists:edificio,id',
@@ -89,34 +89,34 @@ class PropietarioController extends Controller
         ]);
 
         $edificio = Edificio::find($validated['id_edificio']);
-        Gate::authorize('createFactura', $edificio);
+        Gate::authorize('createConsumo', $edificio);
 
-        // Verificar que no exista factura para el mismo período
-        $exists = FacturaEdificio::where('id_edificio', $validated['id_edificio'])
+        // Verificar que no exista consumo para el mismo período
+        $exists = ConsumoEdificio::where('id_edificio', $validated['id_edificio'])
             ->where('periodo', $validated['periodo'])
             ->exists();
 
         if ($exists) {
-            return back()->withErrors(['periodo' => 'Ya existe una factura para este período']);
+            return back()->withErrors(['periodo' => 'Ya existe una consumo para este período']);
         }
 
         $validated['created_by'] = auth()->id();
-        $factura = FacturaEdificio::create($validated);
+        $consumo = ConsumoEdificio::create($validated);
 
-        // Calcular y crear facturas por departamento
-        $this->crearFacturasDepartamento($factura);
+        // Calcular y crear consumos por departamento
+        $this->crearConsumosDepartamento($consumo);
 
-        return redirect()->route('propietario.facturas')
-            ->with('success', 'Factura creada exitosamente');
+        return redirect()->route('propietario.consumos')
+            ->with('success', 'Consumo creada exitosamente');
     }
 
-    public function pagarFactura(FacturaEdificio $factura)
+    public function pagarConsumo(ConsumoEdificio $consumo)
     {
-        Gate::authorize('payFactura', $factura);
+        Gate::authorize('payConsumo', $consumo);
 
-        $factura->update(['estado' => 'pagada']);
+        $consumo->update(['estado' => 'pagada']);
 
-        return redirect()->back()->with('success', 'Factura marcada como pagada');
+        return redirect()->back()->with('success', 'Consumo marcada como pagada');
     }
 
     // MÉTODOS PARA RESIDENTES
@@ -229,7 +229,7 @@ class PropietarioController extends Controller
         $validated = $request->validate([
             'id_medidor' => 'required|exists:medidor,id',
             'tipo' => 'required|in:preventivo,correctivo,instalacion,calibracion',
-            'cobertura' => 'required|in:incluido_suscripcion,facturado',
+            'cobertura' => 'required|in:incluido_suscripcion,consumodo',
             'costo' => 'required|numeric|min:0',
             'fecha' => 'required|date',
             'descripcion' => 'required|string|max:200'
@@ -257,20 +257,20 @@ class PropietarioController extends Controller
         // Inicializar variables con valores por defecto
         $consumoData = [];
         $alertasData = [];
-        $facturacionData = [];
+        $consumosData = [];
 
         // Solo generar datos si hay un edificio seleccionado
         if ($edificioId || $request->has('year')) {
             $consumoData = $this->getReporteConsumo($user->id, $edificioId, $year);
             $alertasData = $this->getReporteAlertas($user->id, $edificioId, $year);
-            $facturacionData = $this->getReporteFacturacion($user->id, $edificioId, $year);
+            $consumosData = $this->getReporteConsumos($user->id, $edificioId, $year);
         }
 
         return view('propietario.reportes', compact(
             'edificios',
             'consumoData',
             'alertasData',
-            'facturacionData',
+            'consumosData',
             'year',
             'edificioId'
         ));
@@ -330,9 +330,9 @@ class PropietarioController extends Controller
         return $data;
     }
 
-    private function getReporteFacturacion($propietarioId, $edificioId, $year)
+    private function getReporteConsumos($propietarioId, $edificioId, $year)
     {
-        $query = FacturaEdificio::whereHas('edificio', function($query) use ($propietarioId) {
+        $query = ConsumoEdificio::whereHas('edificio', function($query) use ($propietarioId) {
             $query->where('id_propietario', $propietarioId);
         });
 
@@ -372,7 +372,7 @@ class PropietarioController extends Controller
             'alertas_pendientes' => Alerta::whereHas('medidor.departamento.edificio', function($query) use ($edificioIds) {
                 $query->whereIn('id', $edificioIds);
             })->where('estado', 'pendiente')->count(),
-            'facturas_pendientes' => FacturaEdificio::whereIn('id_edificio', $edificioIds)
+            'consumos_pendientes' => ConsumoEdificio::whereIn('id_edificio', $edificioIds)
                 ->where('estado', 'pendiente')
                 ->count()
         ];
@@ -420,38 +420,38 @@ class PropietarioController extends Controller
 
     //     return $data;
     // }
-    private function getFacturasData($edificios)
+    private function getConsumosData($edificios)
     {
         $currentYear = now()->year;
         $data = [];
 
         foreach ($edificios as $edificio) {
-            $facturas = FacturaEdificio::where('id_edificio', $edificio->id)
+            $consumos = ConsumoEdificio::where('id_edificio', $edificio->id)
                 ->whereYear('fecha_emision', $currentYear)
                 ->get();
 
             $data[] = [
                 'edificio' => $edificio->nombre,
-                'facturas' => $facturas->pluck('monto_total')->toArray(),
-                'meses' => $facturas->pluck('periodo')->toArray()
+                'consumos' => $consumos->pluck('monto_total')->toArray(),
+                'meses' => $consumos->pluck('periodo')->toArray()
             ];
         }
 
         return $data;
     }
 
-    private function crearFacturasDepartamento(FacturaEdificio $factura)
+    private function crearConsumosDepartamento(ConsumoEdificio $consumo)
     {
-        $edificio = $factura->edificio;
-        $periodo = $factura->periodo;
+        $edificio = $consumo->edificio;
+        $periodo = $consumo->periodo;
         
         foreach ($edificio->departamentos as $departamento) {
             $consumoTotal = $this->calcularConsumoDepartamento($departamento, $periodo);
             $porcentajeConsumo = $this->calcularPorcentajeConsumo($edificio, $departamento, $periodo);
-            $montoAsignado = $factura->monto_total * ($porcentajeConsumo / 100);
+            $montoAsignado = $consumo->monto_total * ($porcentajeConsumo / 100);
 
-            FacturaDepartamento::create([
-                'id_factura' => $factura->id,
+            ConsumoDepartamento::create([
+                'id_consumo' => $consumo->id,
                 'id_departamento' => $departamento->id,
                 'monto_asignado' => $montoAsignado,
                 'consumo_m3' => $consumoTotal,

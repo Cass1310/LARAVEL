@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            @if(isset($consumoData) && isset($alertasData) && isset($facturacionData))
+            @if(isset($consumoData) && isset($alertasData) && isset($consumosData))
             <!-- Resumen General -->
             <div class="row mb-4">
                 <div class="col-md-4 mb-3">
@@ -79,7 +79,7 @@
                         <div class="card-body">
                             <i class="bi bi-currency-dollar fs-1"></i>
                             <h4 class="card-title mt-2">
-                                Bs./ {{ number_format(array_sum($facturacionData), 2) }}
+                                Bs./ {{ number_format(array_sum($consumosData), 2) }}
                             </h4>
                             <p class="card-text">Facturación Total</p>
                         </div>
@@ -126,7 +126,7 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <canvas id="facturacionChart" height="250"></canvas>
+                            <canvas id="consumosChart" height="250"></canvas>
                         </div>
                     </div>
                 </div>
@@ -215,18 +215,18 @@
                                     </thead>
                                     <tbody>
                                         @php
-                                            $totalFacturacion = array_sum($facturacionData);
+                                            $totalFacturacion = array_sum($consumosData);
                                         @endphp
                                         @for($i = 1; $i <= 12; $i++)
-                                            @if(isset($facturacionData[$i]))
+                                            @if(isset($consumosData[$i]))
                                                 <tr>
                                                     <td>{{ $meses[$i-1] }}</td>
-                                                    <td>Bs./ {{ number_format($facturacionData[$i], 2) }}</td>
+                                                    <td>Bs./ {{ number_format($consumosData[$i], 2) }}</td>
                                                     <td>
                                                         <div class="progress" style="height: 20px;">
                                                             <div class="progress-bar bg-success" 
-                                                                 style="width: {{ ($facturacionData[$i] / $totalFacturacion) * 100 }}%">
-                                                                {{ round(($facturacionData[$i] / $totalFacturacion) * 100, 1) }}%
+                                                                 style="width: {{ ($consumosData[$i] / $totalFacturacion) * 100 }}%">
+                                                                {{ round(($consumosData[$i] / $totalFacturacion) * 100, 1) }}%
                                                             </div>
                                                         </div>
                                                     </td>
@@ -264,13 +264,13 @@
             <div class="alert alert-info text-center">
                 <i class="bi bi-info-circle fs-1"></i>
                 <h4>Selecciona los filtros para generar el reporte</h4>
-                <p>Utiliza los filtros superiores para visualizar las estadísticas de consumo, alertas y facturación.</p>
+                <p>Utiliza los filtros superiores para visualizar las estadísticas de consumo, alertas y consumos.</p>
             </div>
             @endif
         </div>
     </div>
 
-    @if(isset($consumoData) && isset($alertasData) && isset($facturacionData))
+    @if(isset($consumoData) && isset($alertasData) && isset($consumosData))
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -279,7 +279,7 @@
             // Preparar datos para los gráficos
             const consumoMensual = Array(12).fill(0);
             const alertasMensual = Array(12).fill(0);
-            const facturacionMensual = Array(12).fill(0);
+            const consumosMensual = Array(12).fill(0);
 
             // Llenar arrays con los datos
             @foreach($consumoData as $mes => $valor)
@@ -290,8 +290,8 @@
                 alertasMensual[{{ $mes }} - 1] = {{ $valor }};
             @endforeach
 
-            @foreach($facturacionData as $mes => $valor)
-                facturacionMensual[{{ $mes }} - 1] = {{ $valor }};
+            @foreach($consumosData as $mes => $valor)
+                consumosMensual[{{ $mes }} - 1] = {{ $valor }};
             @endforeach
 
             // Gráfico de Consumo
@@ -350,13 +350,13 @@
             });
 
             // Gráfico de Facturación
-            new Chart(document.getElementById('facturacionChart'), {
+            new Chart(document.getElementById('consumosChart'), {
                 type: 'bar',
                 data: {
                     labels: meses,
                     datasets: [{
                         label: 'Facturación (Bs./)',
-                        data: facturacionMensual,
+                        data: consumosMensual,
                         backgroundColor: 'rgba(40, 167, 69, 0.6)',
                         borderColor: 'rgba(40, 167, 69, 1)',
                         borderWidth: 1
@@ -392,7 +392,7 @@
                         },
                         {
                             label: 'Facturación (Bs./)',
-                            data: facturacionMensual,
+                            data: consumosMensual,
                             borderColor: 'rgba(40, 167, 69, 1)',
                             backgroundColor: 'rgba(40, 167, 69, 0.1)',
                             yAxisID: 'y1',

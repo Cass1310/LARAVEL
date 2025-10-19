@@ -2,25 +2,25 @@
 
 namespace App\Policies;
 
-use App\Models\FacturaEdificio;
+use App\Models\ConsumoEdificio;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class FacturaEdificioPolicy
+class ConsumoEdificioPolicy
 {
     public function viewAny(User $user): bool
     {
         return in_array($user->rol, ['administrador', 'propietario']);
     }
 
-    public function view(User $user, FacturaEdificio $factura): bool
+    public function view(User $user, ConsumoEdificio $consumo): bool
     {
         if ($user->rol === 'administrador') {
             return true;
         }
 
         if ($user->rol === 'propietario') {
-            return $factura->edificio->id_propietario === $user->id;
+            return $consumo->edificio->id_propietario === $user->id;
         }
 
         return false;
@@ -31,19 +31,19 @@ class FacturaEdificioPolicy
         return $user->rol === 'administrador';
     }
 
-    public function update(User $user, FacturaEdificio $factura): bool
+    public function update(User $user, ConsumoEdificio $consumo): bool
     {
         return $user->rol === 'administrador';
     }
 
-    public function delete(User $user, FacturaEdificio $factura): bool
+    public function delete(User $user, ConsumoEdificio $consumo): bool
     {
         return $user->rol === 'administrador';
     }
 
-    public function pay(User $user, FacturaEdificio $factura): bool
+    public function pay(User $user, ConsumoEdificio $consumo): bool
     {
         return $user->rol === 'administrador' || 
-               ($user->rol === 'propietario' && $factura->edificio->id_propietario === $user->id);
+               ($user->rol === 'propietario' && $consumo->edificio->id_propietario === $user->id);
     }
 }

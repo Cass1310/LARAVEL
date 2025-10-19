@@ -20,7 +20,7 @@
                                     <h3 class="text-primary">Bs./ {{ number_format($precios['mensual'], 2) }}</h3>
                                     <p class="text-muted">por mes</p>
                                     <ul class="list-unstyled">
-                                        <li><i class="bi bi-check-circle text-success me-2"></i>Facturación mensual</li>
+                                        <li><i class="bi bi-check-circle text-success me-2"></i>Pago mensual</li>
                                         <li><i class="bi bi-check-circle text-success me-2"></i>Sin compromiso</li>
                                         <li><i class="bi bi-check-circle text-success me-2"></i>Cancelación anytime</li>
                                     </ul>

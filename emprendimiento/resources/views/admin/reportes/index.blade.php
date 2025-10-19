@@ -47,8 +47,8 @@
                     <div class="card text-center bg-success text-white">
                         <div class="card-body">
                             <i class="bi bi-currency-dollar fs-1"></i>
-                            <h5 class="card-title mt-2">Bs./ {{ number_format($reporteData['facturacion']->total ?? 0, 2) }}</h5>
-                            <p class="card-text">Facturación Total</p>
+                            <h5 class="card-title mt-2">Bs./ {{ number_format($reporteData['consumos']->total ?? 0, 2) }}</h5>
+                            <p class="card-text">Consumos Total</p>
                         </div>
                     </div>
                 </div>
@@ -90,12 +90,12 @@
                 <div class="col-md-6 mb-4">
                     <div class="card">
                         <div class="card-header bg-success text-white">
-                            <h5 class="card-title mb-0">Resumen de Facturación</h5>
+                            <h5 class="card-title mb-0">Resumen de Consumos</h5>
                         </div>
                         <div class="card-body">
-                            <p><strong>Total:</strong> Bs./ {{ number_format($reporteData['facturacion']->total ?? 0, 2) }}</p>
-                            <p><strong>Promedio:</strong> Bs./ {{ number_format($reporteData['facturacion']->promedio ?? 0, 2) }}</p>
-                            <p><strong>Cantidad:</strong> {{ $reporteData['facturacion']->cantidad ?? 0 }} facturas</p>
+                            <p><strong>Total:</strong> Bs./ {{ number_format($reporteData['consumos']->total ?? 0, 2) }}</p>
+                            <p><strong>Promedio:</strong> Bs./ {{ number_format($reporteData['consumos']->promedio ?? 0, 2) }}</p>
+                            <p><strong>Cantidad:</strong> {{ $reporteData['consumos']->cantidad ?? 0 }} Consumos</p>
                         </div>
                     </div>
                 </div>

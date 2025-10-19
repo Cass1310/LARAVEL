@@ -2,41 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FacturaEdificio;
+use App\Models\ConsumoEdificio;
 use App\Models\Edificio;
-use App\Models\FacturaDepartamento;
+use App\Models\ConsumoDepartamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 
-class FacturaEdificioController extends Controller
+class ConsumoEdificioController extends Controller
 {
     public function index()
     {
-        Gate::authorize('viewAny', FacturaEdificio::class);
+        Gate::authorize('viewAny', ConsumoEdificio::class);
 
         if (auth()->user()->rol === 'administrador') {
-            $facturas = FacturaEdificio::with(['edificio', 'creador'])->get();
+            $consumos = ConsumoEdificio::with(['edificio', 'creador'])->get();
         } else {
-            $facturas = FacturaEdificio::whereHas('edificio', function ($query) {
+            $consumos = ConsumoEdificio::whereHas('edificio', function ($query) {
                 $query->where('id_propietario', auth()->id());
             })->with(['edificio', 'creador'])->get();
         }
 
-        return view('facturas-edificio.index', compact('facturas'));
+        return view('consumos-edificio.index', compact('consumos'));
     }
 
     public function create()
     {
-        Gate::authorize('create', FacturaEdificio::class);
+        Gate::authorize('create', ConsumoEdificio::class);
 
         $edificios = Edificio::with('departamentos.medidores.consumos')->get();
-        return view('facturas-edificio.create', compact('edificios'));
+        return view('consumos-edificio.create', compact('edificios'));
     }
 
     public function store(Request $request)
     {
-        Gate::authorize('create', FacturaEdificio::class);
+        Gate::authorize('create', ConsumoEdificio::class);
 
         $validated = $request->validate([
             'id_edificio' => 'required|exists:edificio,id',
@@ -46,37 +46,37 @@ class FacturaEdificioController extends Controller
             'fecha_vencimiento' => 'nullable|date',
         ]);
 
-        // Verificar que no exista factura para el mismo período
-        $exists = FacturaEdificio::where('id_edificio', $validated['id_edificio'])
+        // Verificar que no exista consumo para el mismo período
+        $exists = ConsumoEdificio::where('id_edificio', $validated['id_edificio'])
             ->where('periodo', $validated['periodo'])
             ->exists();
 
         if ($exists) {
-            return back()->withErrors(['periodo' => 'Ya existe una factura para este período']);
+            return back()->withErrors(['periodo' => 'Ya existe una consumo para este período']);
         }
 
         $validated['created_by'] = auth()->id();
-        $factura = FacturaEdificio::create($validated);
+        $consumo = ConsumoEdificio::create($validated);
 
-        // Calcular y crear facturas por departamento
-        $this->crearFacturasDepartamento($factura);
+        // Calcular y crear consumos por departamento
+        $this->crearConsumosDepartamento($consumo);
 
-        return redirect()->route('facturas-edificio.show', $factura)
-            ->with('success', 'Factura creada exitosamente');
+        return redirect()->route('consumos-edificio.show', $consumo)
+            ->with('success', 'Consumo creada exitosamente');
     }
 
-    private function crearFacturasDepartamento(FacturaEdificio $factura)
+    private function crearConsumosDepartamento(ConsumoEdificio $consumo)
     {
-        $edificio = $factura->edificio;
-        $periodo = $factura->periodo;
+        $edificio = $consumo->edificio;
+        $periodo = $consumo->periodo;
         
         foreach ($edificio->departamentos as $departamento) {
             $consumoTotal = $this->calcularConsumoDepartamento($departamento, $periodo);
             $porcentajeConsumo = $this->calcularPorcentajeConsumo($edificio, $departamento, $periodo);
-            $montoAsignado = $factura->monto_total * ($porcentajeConsumo / 100);
+            $montoAsignado = $consumo->monto_total * ($porcentajeConsumo / 100);
 
-            FacturaDepartamento::create([
-                'id_factura' => $factura->id,
+            ConsumoDepartamento::create([
+                'id_consumo' => $consumo->id,
                 'id_departamento' => $departamento->id,
                 'monto_asignado' => $montoAsignado,
                 'consumo_m3' => $consumoTotal,
@@ -106,21 +106,21 @@ class FacturaEdificioController extends Controller
         return $consumoTotalEdificio > 0 ? ($consumoDepartamento / $consumoTotalEdificio) * 100 : 0;
     }
 
-    public function show(FacturaEdificio $facturaEdificio)
+    public function show(ConsumoEdificio $consumoEdificio)
     {
-        Gate::authorize('view', $facturaEdificio);
+        Gate::authorize('view', $consumoEdificio);
 
-        $facturaEdificio->load(['edificio', 'facturasDepartamento.departamento.residentes']);
+        $consumoEdificio->load(['edificio', 'consumosDepartamento.departamento.residentes']);
         
-        return view('facturas-edificio.show', compact('facturaEdificio'));
+        return view('consumos-edificio.show', compact('consumoEdificio'));
     }
 
-    public function markAsPaid(FacturaEdificio $facturaEdificio)
+    public function markAsPaid(ConsumoEdificio $consumoEdificio)
     {
-        Gate::authorize('pay', $facturaEdificio);
+        Gate::authorize('pay', $consumoEdificio);
 
-        $facturaEdificio->update(['estado' => 'pagada']);
+        $consumoEdificio->update(['estado' => 'pagada']);
 
-        return redirect()->back()->with('success', 'Factura marcada como pagada');
+        return redirect()->back()->with('success', 'Consumo marcada como pagada');
     }
 }

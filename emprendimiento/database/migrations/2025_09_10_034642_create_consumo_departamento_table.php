@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('factura_departamento', function (Blueprint $table) {
+        Schema::create('consumo_departamento', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_factura')->constrained('factura_edificio');
+            $table->foreignId('id_consumo')->constrained('consumo_edificio');
             $table->foreignId('id_departamento')->constrained('departamento');
             $table->decimal('monto_asignado', 12, 2);
             $table->decimal('consumo_m3', 10, 2);
@@ -19,12 +19,12 @@ return new class extends Migration
             $table->date('fecha_pago')->nullable();
             $table->timestamps();
 
-            $table->unique(['id_factura', 'id_departamento']);
+            $table->unique(['id_consumo', 'id_departamento']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('factura_departamento');
+        Schema::dropIfExists('consumo_departamento');
     }
 };

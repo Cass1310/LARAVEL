@@ -49,8 +49,8 @@
                     <div class="card text-center bg-danger text-white">
                         <div class="card-body">
                             <i class="bi bi-receipt fs-1"></i>
-                            <h5 class="card-title mt-2">{{ $metricas['facturas_pendientes'] }}</h5>
-                            <p class="card-text small">Facturas Pendientes</p>
+                            <h5 class="card-title mt-2">{{ $metricas['consumos_pendientes'] }}</h5>
+                            <p class="card-text small">Consumos Pendientes</p>
                         </div>
                     </div>
                 </div>
@@ -72,16 +72,16 @@
                     </div>
                 </div>
 
-                <!-- Facturas por Edificio -->
+                <!-- Consumos por Edificio -->
                 <div class="col-lg-6 mb-4">
                     <div class="card">
                         <div class="card-header bg-success text-white">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-bar-chart me-2"></i>Facturación por Edificio
+                                <i class="bi bi-bar-chart me-2"></i>Consumoción por Edificio
                             </h5>
                         </div>
                         <div class="card-body">
-                            <canvas id="facturasChart" height="250"></canvas>
+                            <canvas id="consumosChart" height="250"></canvas>
                         </div>
                     </div>
                 </div>
@@ -98,10 +98,10 @@
                     </a>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <a href="{{ route('propietario.facturas') }}" class="card text-center text-decoration-none">
+                    <a href="{{ route('propietario.consumos') }}" class="card text-center text-decoration-none">
                         <div class="card-body">
                             <i class="bi bi-receipt fs-1 text-success"></i>
-                            <h6 class="card-title mt-2">Facturación</h6>
+                            <h6 class="card-title mt-2">Consumoción</h6>
                         </div>
                     </a>
                 </div>
@@ -151,20 +151,20 @@
                     }
                 });
 
-                // Gráfico de facturas
-                const facturasData = @json($facturasData);
+                // Gráfico de consumos
+                const consumosData = @json($consumosData);
                 const datasets = [];
                 const colors = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF'];
 
-                facturasData.forEach((item, index) => {
+                consumosData.forEach((item, index) => {
                     datasets.push({
                         label: item.edificio,
-                        data: item.facturas,
+                        data: item.consumos,
                         backgroundColor: colors[index % colors.length]
                     });
                 });
 
-                new Chart(document.getElementById('facturasChart'), {
+                new Chart(document.getElementById('consumosChart'), {
                     type: 'bar',
                     data: {
                         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],

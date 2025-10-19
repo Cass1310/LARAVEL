@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FacturaEdificio extends Model
+class ConsumoEdificio extends Model
 {
     use HasFactory;
 
-    protected $table = 'factura_edificio';
+    protected $table = 'consumo_edificio';
 
     protected $fillable = [
         'id_edificio',
@@ -37,9 +37,9 @@ class FacturaEdificio extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function facturasDepartamento()
+    public function consumosDepartamento()
     {
-        return $this->hasMany(FacturaDepartamento::class, 'id_factura');
+        return $this->hasMany(consumoDepartamento::class, 'id_consumo');
     }
 
     public function scopePending($query)

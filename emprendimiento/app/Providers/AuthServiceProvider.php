@@ -8,7 +8,7 @@ use App\Models\Edificio;
 use App\Models\Departamento;
 use App\Models\Medidor;
 use App\Models\User;
-use App\Models\FacturaDepartamento;
+use App\Models\ConsumoDepartamento;
 use App\Policies\EdificioPolicy;
 use App\Policies\DepartamentoPolicy;
 use App\Policies\MedidorPolicy;
@@ -19,8 +19,8 @@ class AuthServiceProvider extends ServiceProvider
         Edificio::class => EdificioPolicy::class,
         Departamento::class => DepartamentoPolicy::class,
         Medidor::class => MedidorPolicy::class,
-        FacturaEdificio::class => FacturaEdificioPolicy::class,
-        FacturaDepartamento::class => FacturaDepartamentoPolicy::class,
+        ConsumoEdificio::class => ConsumoEdificioPolicy::class,
+        ConsumoDepartamento::class => ConsumoDepartamentoPolicy::class,
     ];
 
     public function boot(): void
@@ -39,9 +39,9 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('is-residente', function (User $user) {
             return $user->rol === 'residente';
         });
-        Gate::define('pay-factura', function (User $user, FacturaDepartamento $factura) {
+        Gate::define('pay-consumo', function (User $user, ConsumoDepartamento $consumo) {
         return $user->rol === 'administrador' || 
-               ($user->rol === 'residente' && $factura->departamento->residentes->contains('id', $user->id));
+               ($user->rol === 'residente' && $consumo->departamento->residentes->contains('id', $user->id));
     });
     }
 }

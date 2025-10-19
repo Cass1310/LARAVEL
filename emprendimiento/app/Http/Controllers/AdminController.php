@@ -8,7 +8,7 @@ use App\Models\Suscripcion;
 use App\Models\Alerta;
 use App\Models\Mantenimiento;
 use App\Models\ConsumoAgua;
-use App\Models\FacturaEdificio;
+use App\Models\ConsumoEdificio;
 use App\Models\SuscripcionPago;
 use App\Models\Medidor;
 use App\Models\Gateway;
@@ -223,7 +223,7 @@ class AdminController extends Controller
     {
         return [
             'consumo' => $this->getReporteConsumo($fechaInicio, $fechaFin),
-            'facturacion' => $this->getReporteFacturacion($fechaInicio, $fechaFin),
+            'consumos' => $this->getReporteConsumos($fechaInicio, $fechaFin),
             'alertas' => $this->getReporteAlertas($fechaInicio, $fechaFin),
             'mantenimientos' => $this->getReporteMantenimientos($fechaInicio, $fechaFin),
             'suscripciones' => $this->getReporteSuscripciones(),
@@ -237,9 +237,9 @@ class AdminController extends Controller
             ->first();
     }
 
-    private function getReporteFacturacion($fechaInicio, $fechaFin)
+    private function getReporteConsumos($fechaInicio, $fechaFin)
     {
-        return FacturaEdificio::whereBetween('fecha_emision', [$fechaInicio, $fechaFin])
+        return ConsumoEdificio::whereBetween('fecha_emision', [$fechaInicio, $fechaFin])
             ->selectRaw('SUM(monto_total) as total, COUNT(*) as cantidad, AVG(monto_total) as promedio')
             ->first();
     }

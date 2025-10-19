@@ -32,8 +32,8 @@ class Edificio extends Model
     {
         return $this->hasMany(Departamento::class, 'id_edificio');
     }
-    public function facturas()
+    public function consumos()
     {
-        return $this->hasMany(FacturaEdificio::class, 'id_edificio');
+        return $this->hasMany(ConsumoEdificio::class, 'id_edificio');
     }
 }

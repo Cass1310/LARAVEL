@@ -6,7 +6,7 @@ use App\Models\Departamento;
 use App\Models\Alerta;
 use App\Models\Mantenimiento;
 use App\Models\ConsumoAgua;
-use App\Models\FacturaDepartamento;
+use App\Models\ConsumoDepartamento;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -149,7 +149,7 @@ class ResidenteController extends Controller
             DB::statement('CALL registrar_mantenimiento(?, ?, ?, ?, ?, ?, ?)', [
                 $idMedidor,
                 $tipo,
-                'facturado',  
+                'cobrado',  
                 0,             
                 $fecha,
                 $descripcion,
@@ -182,7 +182,7 @@ class ResidenteController extends Controller
 
     private function getPagosMensual($departamento, $year)
     {
-        $pagos = FacturaDepartamento::where('id_departamento', $departamento->id)
+        $pagos = ConsumoDepartamento::where('id_departamento', $departamento->id)
             ->where('estado', 'pagado')
             ->whereYear('fecha_pago', $year)
             ->selectRaw('MONTH(fecha_pago) as mes, SUM(monto_asignado) as total')

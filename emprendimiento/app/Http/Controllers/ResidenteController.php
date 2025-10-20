@@ -100,14 +100,20 @@ class ResidenteController extends Controller
         $alertasMensual = $this->getAlertasMensual($departamento, $year);
         $pagosMensual = $this->getPagosMensual($departamento, $year);
 
+        // Promedio solo sobre meses con pagos
+        $mesesConPagos = count(array_filter($pagosMensual, fn($p) => $p > 0));
+        $promedioMensual = $mesesConPagos > 0 ? array_sum($pagosMensual) / $mesesConPagos : 0;
+
         return view('residente.reportes', compact(
             'departamento', 
             'consumoMensual', 
             'alertasMensual', 
             'pagosMensual', 
+            'promedioMensual',
             'year'
         ));
     }
+
 
     private function getConsumoMensual($departamento, $year)
     {
@@ -210,11 +216,14 @@ class ResidenteController extends Controller
             ->groupBy('mes')
             ->get();
 
+        // Inicializamos los 12 meses con cero
         $data = array_fill(0, 12, 0);
+
         foreach ($pagos as $pago) {
             $data[$pago->mes - 1] = (float) $pago->total;
         }
 
         return $data;
     }
+
 }

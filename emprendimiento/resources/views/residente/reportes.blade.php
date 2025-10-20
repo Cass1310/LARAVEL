@@ -104,7 +104,7 @@
                                     <div class="col-6">
                                         <div class="border rounded p-3">
                                             <h6 class="text-muted">Promedio Mensual</h6>
-                                            <h4 class="text-primary">Bs./ {{ number_format(array_sum($pagosMensual) / 12, 2) }}</h4>
+                                            <h4 class="text-primary">Bs./ {{ number_format($promedioMensual, 2) }}</h4>
                                         </div>
                                     </div>
                                 </div>

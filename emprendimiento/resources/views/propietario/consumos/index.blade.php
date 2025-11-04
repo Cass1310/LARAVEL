@@ -39,16 +39,15 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="#" class="btn btn-sm btn-outline-info">
-                                                    <i class="bi bi-eye"></i> Ver
+                                                <a href="{{ route('propietario.pagos.detalle', $consumo) }}" 
+                                                   class="btn btn-sm btn-outline-info">
+                                                    <i class="bi bi-eye me-1"></i>Ver
                                                 </a>
                                                 @if($consumo->estado == 'pendiente')
-                                                    <form action="{{ route('propietario.consumos.pagar', $consumo) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-outline-success">
-                                                            <i class="bi bi-check-circle"></i> Pagar
-                                                        </button>
-                                                    </form>
+                                                    <a href="{{ route('propietario.pagos.mostrar', $consumo) }}" 
+                                                        class="btn btn-sm btn-success me-1">
+                                                            <i class="bi bi-credit-card me-1"></i>Pagar
+                                                    </a>
                                                 @endif
                                             </td>
                                         </tr>

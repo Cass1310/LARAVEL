@@ -89,7 +89,9 @@ class PropietarioController extends Controller
         ]);
 
         $edificio = Edificio::find($validated['id_edificio']);
-        Gate::authorize('createConsumo', $edificio);
+        
+        // Usar el gate correcto
+        Gate::authorize('create-consumo', $edificio);
 
         // Verificar que no exista consumo para el mismo período
         $exists = ConsumoEdificio::where('id_edificio', $validated['id_edificio'])
@@ -155,8 +157,10 @@ class PropietarioController extends Controller
         ]);
 
         // Verificar que el departamento pertenezca al propietario
-        $departamento = Departamento::find($validated['id_departamento']);
-        Gate::authorize('manageResidentes', $departamento->edificio);
+            $departamento = Departamento::find($validated['id_departamento']);
+        
+        // Usar el gate correcto para gestionar residentes
+        Gate::authorize('manage-residentes', $departamento->edificio);
 
         // Crear usuario residente
         $residente = User::create([
@@ -553,5 +557,84 @@ class PropietarioController extends Controller
                 });
             });
     }
-    
+    // paga la factura edificio y las demas
+    public function pagos()
+    {
+        $user = auth()->user();
+        
+        $consumosPendientes = ConsumoEdificio::whereHas('edificio', function($query) use ($user) {
+            $query->where('id_propietario', $user->id);
+        })
+        ->with(['edificio', 'consumosDepartamento.departamento.residentes'])
+        ->where('estado', 'pendiente')
+        ->orderBy('fecha_vencimiento', 'asc')
+        ->get();
+
+        $consumosPagados = ConsumoEdificio::whereHas('edificio', function($query) use ($user) {
+            $query->where('id_propietario', $user->id);
+        })
+        ->with(['edificio'])
+        ->where('estado', 'pagada')
+        ->orderBy('fecha_emision', 'desc')
+        ->get();
+
+        return view('propietario.pagos.index', compact('consumosPendientes', 'consumosPagados'));
+    }
+
+    public function mostrarPago(ConsumoEdificio $consumo)
+    {
+        Gate::authorize('pay-consumo', $consumo);
+        $consumo->load(['edificio', 'consumosDepartamento.departamento.residentes']);
+        return view('propietario.pagos.pagar', compact('consumo'));
+    }
+
+    public function procesarPago(Request $request, ConsumoEdificio $consumo)
+    {
+        Gate::authorize('pay-consumo', $consumo);
+
+        $validated = $request->validate([
+            'metodo_pago' => 'required|in:transferencia,deposito,efectivo,tarjeta',
+            'comprobante' => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+            'numero_comprobante' => 'nullable|string|max:50',
+            'fecha_pago' => 'required|date'
+        ]);
+
+        // Procesar el pago
+        DB::transaction(function () use ($consumo, $validated,$request) {
+            // 1. Marcar consumo del edificio como pagado
+            $consumo->update([
+                'estado' => 'pagada',
+                'fecha_pago' => $validated['fecha_pago']
+            ]);
+
+            // 2. Marcar todos los consumos de departamento como pagados
+            $consumo->consumosDepartamento()->update([
+                'estado' => 'pagado',
+                'fecha_pago' => $validated['fecha_pago']
+            ]);
+
+            // 3. Guardar comprobante si existe
+            if ($request->hasFile('comprobante')) {
+                $comprobantePath = $request->file('comprobante')->store('comprobantes', 'public');
+            }
+        });
+
+        return redirect()->route('propietario.pagos.index')
+            ->with('success', 'Pago procesado exitosamente');
+    }
+
+    public function detallePago(ConsumoEdificio $consumo)
+    {
+         Gate::authorize('view', $consumo);
+        
+        $consumo->load([
+            'edificio', 
+            'consumosDepartamento.departamento.residentes',
+            'consumosDepartamento' => function($query) {
+                $query->orderBy('id_departamento');
+            }
+        ]);
+
+        return view('propietario.pagos.detalle', compact('consumo'));
+    }
 }

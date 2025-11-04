@@ -53,6 +53,9 @@
                             <x-nav-link :href="route('propietario.reportes')" :active="request()->routeIs('propietario.reportes')">
                                 {{ __('Reportes') }}
                             </x-nav-link>
+                                <x-nav-link :href="route('propietario.pagos.index')" :active="request()->routeIs('propietario.pagos*')">
+                                {{ __('Pagos') }}
+                            </x-nav-link>
                         @endif
 
                         @if(Auth::user()->rol === 'administrador')

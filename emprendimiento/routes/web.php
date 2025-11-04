@@ -97,6 +97,13 @@ Route::middleware(['auth', 'verified', 'role:propietario'])->prefix('propietario
     Route::get('/mantenimientos/crear', [PropietarioController::class, 'crearMantenimiento'])->name('mantenimientos.crear');
     Route::post('/mantenimientos', [PropietarioController::class, 'guardarMantenimiento'])->name('mantenimientos.guardar');
     Route::get('/reportes', [PropietarioController::class, 'reportes'])->name('reportes');
+    // Rutas de pagos para propietarios
+    Route::prefix('pagos')->name('pagos.')->group(function () {
+        Route::get('/', [PropietarioController::class, 'pagos'])->name('index');
+        Route::get('/{consumo}/pagar', [PropietarioController::class, 'mostrarPago'])->name('mostrar');
+        Route::post('/{consumo}/procesar', [PropietarioController::class, 'procesarPago'])->name('procesar');
+        Route::get('/{consumo}/detalle', [PropietarioController::class, 'detallePago'])->name('detalle');
+    });
 });
 
 // Rutas de suscripción

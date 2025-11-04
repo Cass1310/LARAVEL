@@ -48,7 +48,7 @@ class PropietarioController extends Controller
         return view('propietario.edificios', compact('edificios'));
     }
 
-    public function edificioShow(Edificio $edificio)
+    public function edificioShowNOSIRVE(Edificio $edificio)
     {
         Gate::authorize('view', $edificio);
         
@@ -478,6 +478,80 @@ class PropietarioController extends Controller
         });
 
         return $consumoTotalEdificio > 0 ? ($consumoDepartamento / $consumoTotalEdificio) * 100 : 0;
+    }
+    // peticion del lic
+    public function edificioShow($id)
+    {
+        $user = auth()->user();
+        $edificio = Edificio::with(['departamentos.residentes', 'departamentos.medidores.consumos'])
+            ->where('id_propietario', $user->id)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        // Obtener datos para la gráfica de consumo por residente
+        $consumoPorResidente = $this->getConsumoPorResidente($edificio);
+        
+        // Obtener consumos pendientes por residente
+        $consumosResidentes = $this->getconsumosPendientesResidentes($edificio);
+
+        return view('propietario.edificio-show', compact(
+            'edificio',
+            'consumoPorResidente',
+            'consumosResidentes'
+        ));
+    }
+
+    private function getConsumoPorResidente($edificio)
+    {
+        $currentMonth = now()->format('Y-m');
+        $data = [];
+
+        foreach ($edificio->departamentos as $departamento) {
+            foreach ($departamento->residentes as $residente) {
+                $consumo = $departamento->medidores->sum(function($medidor) use ($currentMonth) {
+                    return $medidor->consumos()
+                        ->whereYear('fecha_hora', substr($currentMonth, 0, 4))
+                        ->whereMonth('fecha_hora', substr($currentMonth, 5, 2))
+                        ->sum('volumen');
+                });
+
+                if ($consumo > 0) {
+                    $data[] = [
+                        'residente' => $residente->nombre,
+                        'departamento' => $departamento->numero_departamento,
+                        'consumo' => $consumo
+                    ];
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    private function getconsumosPendientesResidentes($edificio)
+    {
+        $currentMonth = now()->format('Y-m');
+        
+        return ConsumoDepartamento::whereHas('consumoEdificio', function($query) use ($edificio, $currentMonth) {
+                $query->where('id_edificio', $edificio->id)
+                    ->where('periodo', $currentMonth);
+            })
+            ->whereHas('departamento.residentes')
+            ->with(['departamento.residentes', 'consumoEdificio'])
+            ->get()
+            ->flatMap(function($consumoDepto) {
+                return $consumoDepto->departamento->residentes->map(function($residente) use ($consumoDepto) {
+                    return [
+                        'residente' => $residente->nombre,
+                        'departamento' => $consumoDepto->departamento->numero_departamento,
+                        'monto_asignado' => $consumoDepto->monto_asignado,
+                        'consumo_m3' => $consumoDepto->consumo_m3,
+                        'porcentaje_consumo' => $consumoDepto->porcentaje_consumo,
+                        'estado' => $consumoDepto->estado,
+                        'fecha_vencimiento' => $consumoDepto->consumoEdificio->fecha_vencimiento
+                    ];
+                });
+            });
     }
     
 }

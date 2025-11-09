@@ -17,7 +17,8 @@ class Mantenimiento extends Model
         'cobertura',
         'costo',
         'fecha',
-        'descripcion'
+        'descripcion',
+        'estado'
     ];
 
     protected $casts = [

@@ -11,7 +11,7 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Lista de Usuarios</h5>
                     <a href="{{ route('admin.usuarios.crear') }}" class="btn btn-light btn-sm">
-                        <i class="bi bi-person-plus me-1"></i>Nuevo Usuario
+                        <i class="bi bi-person-plus me-1"></i>Crear Usuario
                     </a>
                 </div>
                 <div class="card-body">
@@ -24,7 +24,6 @@
                                     <th>Rol</th>
                                     <th>Teléfono</th>
                                     <th>Creado por</th>
-                                    <th>Fecha Registro</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -40,19 +39,33 @@
                                         </td>
                                         <td>{{ $usuario->telefono ?? 'N/A' }}</td>
                                         <td>{{ $usuario->creador->nombre ?? 'Sistema' }}</td>
-                                        <td>{{ $usuario->created_at->format('d/m/Y') }}</td>
                                         <td>
-                                            <a href="{{ route('admin.usuarios.editar', $usuario) }}" class="btn btn-sm btn-outline-primary me-1">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <form action="{{ route('admin.usuarios.eliminar', $usuario) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                        onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                            @if ($usuario->rol !== 'administrador')
+                                                <div class="btn-group">
+                                                    <a href="{{ route('admin.usuarios.editar', $usuario) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    
+                                                    @if($usuario->rol === 'residente' && $usuario->departamentosResidente->count() > 0)
+                                                        <form action="{{ route('admin.usuarios.desvincular', $usuario) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-outline-warning" 
+                                                                    onclick="return confirm('¿Desvincular usuario de todos los departamentos?')">
+                                                                <i class="bi bi-person-dash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                    
+                                                    <form action="{{ route('admin.usuarios.eliminar', $usuario) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

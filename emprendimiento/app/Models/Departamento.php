@@ -36,9 +36,11 @@ class Departamento extends Model
     public function residentes()
     {
         return $this->belongsToMany(User::class, 'residente_departamento', 'id_departamento', 'id_residente')
+                    ->using(ResidenteDepartamento::class)
                     ->withPivot('fecha_inicio', 'fecha_fin')
                     ->withTimestamps();
     }
+
     public function consumos()
     {
         return $this->hasMany(ConsumoDepartamento::class, 'id_departamento');

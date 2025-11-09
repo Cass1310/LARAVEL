@@ -76,9 +76,11 @@ class User extends Authenticatable
     public function departamentosResidente()
     {
         return $this->belongsToMany(Departamento::class, 'residente_departamento', 'id_residente', 'id_departamento')
+                    ->using(ResidenteDepartamento::class)
                     ->withPivot('fecha_inicio', 'fecha_fin')
                     ->withTimestamps();
     }
+
 
     public function elementosCreados()
     {

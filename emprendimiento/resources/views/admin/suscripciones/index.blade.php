@@ -12,6 +12,41 @@
                     <h5 class="card-title mb-0">Todas las Suscripciones</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Resumen -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center bg-success text-white">
+                                <div class="card-body py-3">
+                                    <h6 class="card-title">Activas</h6>
+                                    <h4>{{ $suscripciones->where('estado', 'activa')->count() }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center bg-warning text-dark">
+                                <div class="card-body py-3">
+                                    <h6 class="card-title">Mensuales</h6>
+                                    <h4>{{ $suscripciones->where('tipo', 'mensual')->count() }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center bg-info text-white">
+                                <div class="card-body py-3">
+                                    <h6 class="card-title">Anuales</h6>
+                                    <h4>{{ $suscripciones->where('tipo', 'anual')->count() }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center bg-secondary text-white">
+                                <div class="card-body py-3">
+                                    <h6 class="card-title">Vencidas</h6>
+                                    <h4>{{ $suscripciones->where('estado', 'vencida')->count() }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>

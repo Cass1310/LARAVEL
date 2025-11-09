@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Edificio;
-use App\Models\Suscripcion;
-use App\Models\Alerta;
-use App\Models\Mantenimiento;
-use App\Models\ConsumoAgua;
-use App\Models\ConsumoEdificio;
-use App\Models\SuscripcionPago;
+use App\Models\Departamento;
 use App\Models\Medidor;
 use App\Models\Gateway;
-use App\Models\Departamento;
+use App\Models\Alerta;
+use App\Models\Mantenimiento;
+use App\Models\Suscripcion;
+use App\Models\SuscripcionPago;
+use App\Models\Cliente;
+use App\Models\ConsumoEdificio;
+use App\Models\ConsumoDepartamento;
+use App\Models\ConsumoAgua;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -22,325 +25,372 @@ class AdminController extends Controller
     {
         // Métricas generales
         $metricas = [
+            'total_usuarios' => User::count(),
             'total_propietarios' => User::where('rol', 'propietario')->count(),
             'total_residentes' => User::where('rol', 'residente')->count(),
             'total_edificios' => Edificio::count(),
-            'suscripciones_activas' => Suscripcion::where('estado', 'activa')
-                ->where('fecha_fin', '>=', now())
-                ->count(),
-            'suscripciones_vencidas' => Suscripcion::where('estado', 'activa')
-                ->where('fecha_fin', '<', now())
-                ->count(),
+            'total_departamentos' => Departamento::count(),
+            'total_medidores' => Medidor::count(),
             'alertas_pendientes' => Alerta::where('estado', 'pendiente')->count(),
             'mantenimientos_pendientes' => Mantenimiento::count(),
+            'suscripciones_activas' => Suscripcion::where('estado', 'activa')->count(),
         ];
 
-        // Suscripciones con información de clientes
-        $suscripciones = Suscripcion::with(['cliente.user', 'pagos'])
-            ->orderBy('fecha_fin', 'asc')
+        // Datos para gráficos
+        $consumoPorEdificio = $this->getConsumoPorEdificio();
+        $pagosPorEdificio = $this->getPagosPorEdificio();
+        $suscripcionesData = $this->getSuscripcionesData();
+
+        // Alertas y mantenimientos recientes
+        $alertasRecientes = Alerta::with('medidor.departamento.edificio')
+            ->where('estado', 'pendiente')
+            ->orderBy('fecha_hora', 'desc')
+            ->take(5)
             ->get();
 
-        // Propietarios con sus edificios
-        $propietarios = User::where('rol', 'propietario')
-            ->with(['cliente.suscripciones', 'edificiosPropietario.departamentos.residentes'])
+        $mantenimientosRecientes = Mantenimiento::with('medidor.departamento.edificio')
+            ->orderBy('fecha', 'desc')
+            ->take(5)
             ->get();
-
-        // Consumo de todos los edificios
-        $consumoData = $this->getConsumoGlobal();
 
         return view('admin.dashboard', compact(
             'metricas',
-            'suscripciones',
-            'propietarios',
-            'consumoData'
+            'consumoPorEdificio',
+            'pagosPorEdificio',
+            'suscripcionesData',
+            'alertasRecientes',
+            'mantenimientosRecientes'
         ));
     }
 
-    private function getConsumoGlobal()
+    private function getConsumoPorEdificio()
     {
-        $currentYear = now()->year;
-        $currentMonth = now()->month;
+        $edificios = Edificio::with(['departamentos.medidores.consumos'])->get();
+        $data = [];
 
-        // Obtener el edificio con mayor consumo de forma correcta
-        $edificioMayorConsumo = Edificio::with(['departamentos.medidores.consumos' => function($query) use ($currentMonth) {
-            $query->whereMonth('fecha_hora', $currentMonth);
-        }])->get()->sortByDesc(function($edificio) {
-            return $edificio->departamentos->sum(function($departamento) {
+        foreach ($edificios as $edificio) {
+            $consumoTotal = $edificio->departamentos->sum(function($departamento) {
                 return $departamento->medidores->sum(function($medidor) {
-                    return $medidor->consumos->sum('volumen');
+                    return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('volumen');
                 });
             });
-        })->first();
 
+            $data[] = [
+                'edificio' => $edificio->nombre,
+                'propietario' => $edificio->propietario->nombre,
+                'consumo' => $consumoTotal
+            ];
+        }
+
+        return $data;
+    }
+
+    private function getPagosPorEdificio()
+    {
+        return ConsumoEdificio::with('edificio.propietario')
+            ->where('estado', 'pagada')
+            ->whereYear('fecha_emision', now()->year)
+            ->get()
+            ->groupBy('edificio.nombre')
+            ->map(function($facturas, $edificio) {
+                return [
+                    'edificio' => $edificio,
+                    'total_pagado' => $facturas->sum('monto_total'),
+                    'propietario' => $facturas->first()->edificio->propietario->nombre
+                ];
+            })->values();
+    }
+
+    private function getSuscripcionesData()
+    {
         return [
-            'consumo_mensual' => ConsumoAgua::whereYear('fecha_hora', $currentYear)
-                ->whereMonth('fecha_hora', $currentMonth)
-                ->sum('volumen'),
-            'consumo_anual' => ConsumoAgua::whereYear('fecha_hora', $currentYear)
-                ->sum('volumen'),
-            'promedio_mensual' => ConsumoAgua::whereYear('fecha_hora', $currentYear)
-                ->average('volumen'),
-            'edificio_mayor_consumo' => $edificioMayorConsumo
+            'activas' => Suscripcion::where('estado', 'activa')->count(),
+            'vencidas' => Suscripcion::where('estado', 'vencida')->count(),
+            'mensuales' => Suscripcion::where('tipo', 'mensual')->count(),
+            'anuales' => Suscripcion::where('tipo', 'anual')->count(),
         ];
     }
-    
 
-
-
-
-
-
-
-
-    //---
-    // MÉTODOS DE USUARIOS
     public function usuarios()
     {
-        $usuarios = User::with(['creador', 'departamentosResidente', 'edificiosPropietario'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+        $usuarios = User::with('creador')->get();
         return view('admin.usuarios.index', compact('usuarios'));
     }
 
     public function crearUsuario()
     {
-        return view('admin.usuarios.crear');
+        $edificios = Edificio::with('departamentos')->get();
+        return view('admin.usuarios.crear', compact('edificios'));
     }
 
     public function guardarUsuario(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
+            'nombre' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
-            'rol' => 'required|in:administrador,propietario,residente',
+            'rol' => 'required|in:propietario,residente',
             'telefono' => 'nullable|string|max:20',
-            'direccion' => 'nullable|string|max:200',
+            'direccion' => 'nullable|string|max:255',
+            'id_departamento' => 'required_if:rol,residente|exists:departamento,id',
+            'fecha_inicio' => 'required_if:rol,residente|date',
+            'fecha_fin' => 'nullable|date|after:fecha_inicio',
         ]);
 
-        User::create([
+        // Crear usuario
+        $usuario = User::create([
             'nombre' => $validated['nombre'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
+            'password' => Hash::make($validated['password']),
             'rol' => $validated['rol'],
             'telefono' => $validated['telefono'],
             'direccion' => $validated['direccion'],
-            'created_by' => auth()->id()
+            'created_by' => auth()->id(),
         ]);
+
+        // Si es residente, asignar al departamento
+        if ($validated['rol'] === 'residente' && isset($validated['id_departamento'])) {
+            $usuario->departamentosResidente()->attach($validated['id_departamento'], [
+                'fecha_inicio' => $validated['fecha_inicio'],
+                'fecha_fin' => $validated['fecha_fin']
+            ]);
+        }
+
+        // Si es propietario, crear cliente automáticamente
+        if ($validated['rol'] === 'propietario') {
+            Cliente::create([
+                'id' => $usuario->id,
+                'razon_social' => $validated['nombre']
+            ]);
+        }
 
         return redirect()->route('admin.usuarios')->with('success', 'Usuario creado exitosamente');
     }
-
-    // MÉTODOS DE EDIFICIOS
-    public function edificios()
+    public function editarUsuario(User $user)
     {
-        $edificios = Edificio::with(['propietario', 'departamentos.residentes', 'departamentos.medidores'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Cargamos todos los edificios con sus departamentos
+        $edificios = Edificio::with('departamentos')->get();
 
-        return view('admin.edificios.index', compact('edificios'));
+        // Obtenemos el departamento actual (si el residente tiene uno asignado)
+        $departamentoActual = $user->departamentosResidente()->first();
+
+        return view('admin.usuarios.editar', compact('user', 'edificios', 'departamentoActual'));
     }
 
-    public function crearEdificio()
-    {
-        $propietarios = User::where('rol', 'propietario')->get();
-        return view('admin.edificios.crear', compact('propietarios'));
-    }
 
-    public function guardarEdificio(Request $request)
+    public function actualizarUsuario(Request $request, User $user)
     {
         $validated = $request->validate([
-            'id_propietario' => 'required|exists:users,id',
-            'nombre' => 'required|string|max:100',
-            'direccion' => 'required|string|max:200',
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:8|confirmed',
+            'rol' => 'required|in:administrador,propietario,residente',
+            'telefono' => 'nullable|string|max:20',
+            'direccion' => 'nullable|string|max:255',
+            'id_departamento' => 'required_if:rol,residente|exists:departamento,id',
+            'fecha_inicio' => 'required_if:rol,residente|date',
+            'fecha_fin' => 'nullable|date|after:fecha_inicio',
         ]);
 
-        Edificio::create([
-            'id_propietario' => $validated['id_propietario'],
+        $updateData = [
             'nombre' => $validated['nombre'],
+            'email' => $validated['email'],
+            'rol' => $validated['rol'],
+            'telefono' => $validated['telefono'],
             'direccion' => $validated['direccion'],
-            'created_by' => auth()->id()
-        ]);
-
-        return redirect()->route('admin.edificios')->with('success', 'Edificio creado exitosamente');
-    }
-
-    // MÉTODOS DE SUSCRIPCIONES
-    public function suscripciones()
-    {
-        $suscripciones = Suscripcion::with(['cliente.user', 'pagos'])
-            ->orderBy('fecha_fin', 'asc')
-            ->get();
-
-        return view('admin.suscripciones.index', compact('suscripciones'));
-    }
-
-    // MÉTODOS DE ALERTAS
-    public function alertas()
-    {
-        $alertas = Alerta::with(['medidor.departamento.edificio.propietario'])
-            ->orderBy( 'fecha_hora', 'desc')
-            ->paginate(20);
-
-        return view('admin.alertas.index', compact('alertas'));
-    }
-
-    public function resolverAlerta(Alerta $alerta)
-    {
-        $alerta->update(['estado' => 'resuelta']);
-        return redirect()->back()->with('success', 'Alerta marcada como resuelta');
-    }
-
-    // MÉTODOS DE MANTENIMIENTOS
-    public function mantenimientos()
-    {
-        $mantenimientos = Mantenimiento::with(['medidor.departamento.edificio'])
-            ->orderBy('fecha', 'asc')
-            ->paginate(20);
-
-        return view('admin.mantenimientos.index', compact('mantenimientos'));
-    }
-
-    public function completarMantenimiento(Mantenimiento $mantenimiento)
-    {
-        $mantenimiento->update(['completado' => true, 'fecha_completado' => now()]);
-        return redirect()->back()->with('success', 'Mantenimiento marcado como completado');
-    }
-
-    // MÉTODOS DE REPORTES
-    public function reportes(Request $request)
-    {
-        $fechaInicio = $request->input('fecha_inicio', now()->subMonth()->format('Y-m-d'));
-        $fechaFin = $request->input('fecha_fin', now()->format('Y-m-d'));
-
-        $reporteData = $this->generarReporteCompleto($fechaInicio, $fechaFin);
-
-        return view('admin.reportes.index', compact('reporteData', 'fechaInicio', 'fechaFin'));
-    }
-
-    private function generarReporteCompleto($fechaInicio, $fechaFin)
-    {
-        return [
-            'consumo' => $this->getReporteConsumo($fechaInicio, $fechaFin),
-            'consumos' => $this->getReporteConsumos($fechaInicio, $fechaFin),
-            'alertas' => $this->getReporteAlertas($fechaInicio, $fechaFin),
-            'mantenimientos' => $this->getReporteMantenimientos($fechaInicio, $fechaFin),
-            'suscripciones' => $this->getReporteSuscripciones(),
         ];
+
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($updateData);
+
+        // Si es residente, actualizar departamento
+        if ($validated['rol'] === 'residente' && isset($validated['id_departamento'])) {
+            // Eliminar asignaciones anteriores
+            $user->departamentosResidente()->detach();
+            
+            // Asignar nuevo departamento
+            $user->departamentosResidente()->attach($validated['id_departamento'], [
+                'fecha_inicio' => $validated['fecha_inicio'],
+                'fecha_fin' => $validated['fecha_fin']
+            ]);
+        }
+
+        return redirect()->route('admin.usuarios')->with('success', 'Usuario actualizado exitosamente');
     }
 
-    private function getReporteConsumo($fechaInicio, $fechaFin)
+    public function eliminarUsuario(User $user)
     {
-        return ConsumoAgua::whereBetween('fecha_hora', [$fechaInicio, $fechaFin])
-            ->selectRaw('SUM(volumen) as total, AVG(volumen) as promedio, COUNT(*) as registros')
-            ->first();
+        // Verificar que no sea el último administrador
+        if ($user->rol === 'administrador' && User::where('rol', 'administrador')->count() <= 1) {
+            return redirect()->route('admin.usuarios')->with('error', 'No se puede eliminar el único administrador del sistema');
+        }
+
+        // Verificar relaciones antes de eliminar
+        if ($user->rol === 'propietario' && $user->edificiosPropietario()->count() > 0) {
+            return redirect()->route('admin.usuarios')->with('error', 'No se puede eliminar un propietario que tiene edificios asignados');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.usuarios')->with('success', 'Usuario eliminado exitosamente');
     }
 
-    private function getReporteConsumos($fechaInicio, $fechaFin)
+    public function equipos()
     {
-        return ConsumoEdificio::whereBetween('fecha_emision', [$fechaInicio, $fechaFin])
-            ->selectRaw('SUM(monto_total) as total, COUNT(*) as cantidad, AVG(monto_total) as promedio')
-            ->first();
+        $medidores = Medidor::with(['departamento.edificio', 'gateway'])->get();
+        $gateways = Gateway::all();
+        
+        return view('admin.equipos.index', compact('medidores', 'gateways'));
     }
 
-    private function getReporteAlertas($fechaInicio, $fechaFin)
+    public function medidores()
     {
-        return Alerta::whereBetween('fecha_hora', [$fechaInicio, $fechaFin])
-            ->selectRaw('COUNT(*) as total, tipo_alerta, estado')
-            ->groupBy('tipo_alerta', 'estado')
-            ->get();
+        $medidores = Medidor::with(['departamento.edificio', 'gateway'])->get();
+        $departamentos = Departamento::with('edificio')->get();
+        $gateways = Gateway::all();
+        
+        return view('admin.equipos.medidores', compact('medidores', 'departamentos', 'gateways'));
     }
-
-    private function getReporteMantenimientos($fechaInicio, $fechaFin)
+    public function editarGateway(Gateway $gateway)
     {
-        return Mantenimiento::whereBetween('fecha', [$fechaInicio, $fechaFin])
-            ->selectRaw('COUNT(*) as total, tipo, cobertura, SUM(costo) as costo_total')
-            ->groupBy('tipo', 'cobertura')
-            ->get();
+        return view('admin.equipos.gateways-editar', compact('gateway'));
     }
 
-    private function getReporteSuscripciones()
-    {
-        return Suscripcion::selectRaw('COUNT(*) as total, tipo, estado, SUM(
-            CASE WHEN tipo = "anual" THEN 99.90 * 12 ELSE 129.90 END
-        ) as ingresos_totales')
-            ->groupBy('tipo', 'estado')
-            ->get();
-    }
-
-    // MÉTODOS ADICIONALES PARA GESTIÓN COMPLETA
-
-    public function crearDepartamento()
-    {
-        $edificios = Edificio::all();
-        return view('admin.departamentos.crear', compact('edificios'));
-    }
-
-    public function guardarDepartamento(Request $request)
+    public function actualizarGateway(Request $request, Gateway $gateway)
     {
         $validated = $request->validate([
-            'id_edificio' => 'required|exists:edificio,id',
-            'numero_departamento' => 'required|string|max:20',
-            'piso' => 'required|string|max:10',
+            'codigo_gateway' => 'required|unique:gateway,codigo_gateway,' . $gateway->id . '|max:50',
+            'descripcion' => 'nullable|string|max:200',
+            'ubicacion' => 'nullable|string|max:200',
         ]);
 
-        Departamento::create([
-            'id_edificio' => $validated['id_edificio'],
-            'numero_departamento' => $validated['numero_departamento'],
-            'piso' => $validated['piso'],
-            'created_by' => auth()->id()
-        ]);
+        $gateway->update($validated);
 
-        return redirect()->route('admin.edificios')->with('success', 'Departamento creado exitosamente');
+        return redirect()->route('admin.gateways')->with('success', 'Gateway actualizado exitosamente');
     }
 
+    public function eliminarGateway(Gateway $gateway)
+    {
+        // Verificar que no tenga medidores asociados
+        if ($gateway->medidores()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un gateway que tiene medidores asociados');
+        }
+
+        $gateway->delete();
+
+        return redirect()->back()->with('success', 'Gateway eliminado exitosamente');
+    }
+    public function atenderMantenimiento(Request $request, Mantenimiento $mantenimiento)
+    {
+        $validated = $request->validate([
+            'estado' => 'required|in:en_proceso,completado,cancelado'
+        ]);
+
+        $mantenimiento->update(['estado' => $validated['estado']]);
+
+        return redirect()->back()->with('success', 'Estado del mantenimiento actualizado');
+    }
     public function crearMedidor()
     {
         $departamentos = Departamento::with('edificio')->get();
         $gateways = Gateway::all();
-        return view('admin.medidores.crear', compact('departamentos', 'gateways'));
+        
+        return view('admin.equipos.medidores-crear', compact('departamentos', 'gateways'));
     }
 
     public function guardarMedidor(Request $request)
     {
         $validated = $request->validate([
+            'codigo_lorawan' => 'required|unique:medidor,codigo_lorawan|max:100',
             'id_departamento' => 'required|exists:departamento,id',
-            'id_gateway' => 'required|exists:gateway,id',
-            'codigo_lorawan' => 'required|string|max:100|unique:medidor,codigo_lorawan',
+            'id_gateway' => 'nullable|exists:gateway,id',
+            'estado' => 'required|in:activo,inactivo',
             'fecha_instalacion' => 'required|date',
         ]);
 
         Medidor::create([
+            'codigo_lorawan' => $validated['codigo_lorawan'],
             'id_departamento' => $validated['id_departamento'],
             'id_gateway' => $validated['id_gateway'],
-            'codigo_lorawan' => $validated['codigo_lorawan'],
+            'estado' => $validated['estado'],
             'fecha_instalacion' => $validated['fecha_instalacion'],
-            'estado' => 'activo',
-            'created_by' => auth()->id()
+            'created_by' => auth()->id(),
         ]);
 
-        return redirect()->back()->with('success', 'Medidor creado exitosamente');
+        return redirect()->route('admin.medidores')->with('success', 'Medidor creado exitosamente');
+    }
+
+    public function asignarGateway(Request $request, Medidor $medidor)
+    {
+        $validated = $request->validate([
+            'id_gateway' => 'required|exists:gateway,id'
+        ]);
+
+        $medidor->update(['id_gateway' => $validated['id_gateway']]);
+
+        return redirect()->back()->with('success', 'Gateway asignado exitosamente');
+    }
+
+    public function gateways()
+    {
+        $gateways = Gateway::with('medidores')->get();
+        return view('admin.equipos.gateways', compact('gateways'));
     }
 
     public function crearGateway()
     {
-        return view('admin.gateways.crear');
+        return view('admin.equipos.gateways-crear');
     }
 
     public function guardarGateway(Request $request)
     {
         $validated = $request->validate([
-            'codigo_gateway' => 'required|string|max:50|unique:gateway,codigo_gateway',
+            'codigo_gateway' => 'required|unique:gateway,codigo_gateway|max:50',
             'descripcion' => 'nullable|string|max:200',
-            'ubicacion' => 'required|string|max:200',
+            'ubicacion' => 'nullable|string|max:200',
         ]);
 
         Gateway::create($validated);
 
-        return redirect()->back()->with('success', 'Gateway creado exitosamente');
+        return redirect()->route('admin.gateways')->with('success', 'Gateway creado exitosamente');
     }
 
+    public function mantenimientos()
+    {
+        $mantenimientos = Mantenimiento::with(['medidor.departamento.edificio'])
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        return view('admin.mantenimientos.index', compact('mantenimientos'));
+    }
+
+    public function alertas()
+    {
+        $alertas = Alerta::with(['medidor.departamento.edificio'])
+            ->orderBy('fecha_hora', 'desc')
+            ->get();
+
+        return view('admin.alertas.index', compact('alertas'));
+    }
+
+    public function atenderAlerta(Alerta $alerta)
+    {
+        $alerta->update(['estado' => 'resuelta']);
+
+        return redirect()->back()->with('success', 'Alerta marcada como resuelta');
+    }
+
+    public function suscripciones()
+    {
+        $suscripciones = Suscripcion::with(['cliente.user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.suscripciones.index', compact('suscripciones'));
+    }
     public function gestionarPagosSuscripcion($suscripcionId)
     {
         $suscripcion = Suscripcion::with('pagos')->findOrFail($suscripcionId);
@@ -367,29 +417,201 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Pago registrado exitosamente');
     }
 
-    public function editarUsuario(User $user)
+    public function reportes()
     {
-        return view('admin.usuarios.editar', compact('user'));
+        $consumoPorEdificio = $this->getConsumoPorEdificio();
+        $pagosPorEdificio = $this->getPagosPorEdificio();
+        $consumoPorDepartamento = $this->getConsumoPorDepartamento();
+
+        return view('admin.reportes.index', compact(
+            'consumoPorEdificio',
+            'pagosPorEdificio',
+            'consumoPorDepartamento'
+        ));
     }
 
-    public function actualizarUsuario(Request $request, User $user)
+    private function getConsumoPorDepartamento()
+    {
+        $departamentos = Departamento::with(['edificio', 'medidores.consumos'])->get();
+        $data = [];
+
+        foreach ($departamentos as $departamento) {
+            $consumoTotal = $departamento->medidores->sum(function($medidor) {
+                return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('volumen');
+            });
+
+            $data[] = [
+                'departamento' => $departamento->numero_departamento,
+                'edificio' => $departamento->edificio->nombre,
+                'consumo' => $consumoTotal
+            ];
+        }
+
+        return $data;
+    }
+
+    public function propietarios()
+    {
+        $propietarios = User::where('rol', 'propietario')
+            ->withCount(['edificiosPropietario', 'elementosCreados'])
+            ->get();
+
+        return view('admin.propietarios.index', compact('propietarios'));
+    }
+
+    public function crearEdificio(Request $request, User $user)
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'rol' => 'required|in:administrador,propietario,residente',
-            'telefono' => 'nullable|string|max:20',
-            'direccion' => 'nullable|string|max:200',
+            'direccion' => 'required|string|max:200',
         ]);
 
-        $user->update($validated);
+        Edificio::create([
+            'id_propietario' => $user->id,
+            'nombre' => $validated['nombre'],
+            'direccion' => $validated['direccion'],
+            'created_by' => auth()->id(),
+        ]);
 
-        return redirect()->route('admin.usuarios')->with('success', 'Usuario actualizado exitosamente');
+        return redirect()->back()->with('success', 'Edificio creado exitosamente');
+    }
+    public function eliminarEdificio(Edificio $edificio)
+    {
+        // Verificar que no tenga departamentos
+        if ($edificio->departamentos()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un edificio que tiene departamentos');
+        }
+
+        $edificio->delete();
+
+        return redirect()->back()->with('success', 'Edificio eliminado exitosamente');
     }
 
-    public function eliminarUsuario(User $user)
+    public function eliminarDepartamento(Departamento $departamento)
     {
-        $user->delete();
-        return redirect()->route('admin.usuarios')->with('success', 'Usuario eliminado exitosamente');
+        // Verificar que no tenga residentes
+        if ($departamento->residentes()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un departamento que tiene residentes asignados');
+        }
+
+        // Verificar que no tenga medidores
+        if ($departamento->medidores()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un departamento que tiene medidores asignados');
+        }
+
+        $departamento->delete();
+
+        return redirect()->back()->with('success', 'Departamento eliminado exitosamente');
+    }
+    public function editarMedidor(Medidor $medidor)
+    {
+        $departamentos = Departamento::with('edificio')->get();
+        $gateways = Gateway::all();
+        
+        return view('admin.equipos.medidores-editar', compact('medidor', 'departamentos', 'gateways'));
+    }
+
+    public function actualizarMedidor(Request $request, Medidor $medidor)
+    {
+        $validated = $request->validate([
+            'codigo_lorawan' => 'required|unique:medidor,codigo_lorawan,' . $medidor->id . '|max:100',
+            'id_departamento' => 'required|exists:departamento,id',
+            'id_gateway' => 'nullable|exists:gateway,id',
+            'estado' => 'required|in:activo,inactivo',
+            'fecha_instalacion' => 'required|date',
+        ]);
+
+        $medidor->update($validated);
+
+        return redirect()->route('admin.medidores')->with('success', 'Medidor actualizado exitosamente');
+    }
+
+    public function eliminarMedidor(Medidor $medidor)
+    {
+        // Verificar que no tenga consumos registrados
+        if ($medidor->consumos()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un medidor que tiene registros de consumo');
+        }
+
+        // Verificar que no tenga alertas
+        if ($medidor->alertas()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un medidor que tiene alertas registradas');
+        }
+
+        // Verificar que no tenga mantenimientos
+        if ($medidor->mantenimientos()->count() > 0) {
+            return redirect()->back()->with('error', 'No se puede eliminar un medidor que tiene mantenimientos registrados');
+        }
+
+        $medidor->delete();
+
+        return redirect()->back()->with('success', 'Medidor eliminado exitosamente');
+    }
+
+    public function desvincularResidente(Departamento $departamento, User $residente)
+    {
+        $departamento->residentes()->detach($residente->id);
+
+        return redirect()->back()->with('success', 'Residente desvinculado del departamento');
+    }
+    public function crearDepartamento(Request $request, Edificio $edificio)
+    {
+        $validated = $request->validate([
+            'numero_departamento' => 'required|string|max:20',
+            'piso' => 'required|string|max:10',
+        ]);
+
+        Departamento::create([
+            'id_edificio' => $edificio->id,
+            'numero_departamento' => $validated['numero_departamento'],
+            'piso' => $validated['piso'],
+            'created_by' => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Departamento creado exitosamente');
+    }
+    public function desvincularDepartamentos(User $user)
+    {
+        if ($user->rol !== 'residente') {
+            return redirect()->back()->with('error', 'Solo se pueden desvincular residentes');
+        }
+
+        $user->departamentosResidente()->detach();
+
+        return redirect()->back()->with('success', 'Usuario desvinculado de todos los departamentos');
+    }
+
+    public function asignarResidente(Request $request, Departamento $departamento)
+    {
+        $validated = $request->validate([
+            'id_residente' => 'required|exists:users,id',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'nullable|date|after:fecha_inicio',
+        ]);
+
+        $departamento->residentes()->attach($validated['id_residente'], [
+            'fecha_inicio' => $validated['fecha_inicio'],
+            'fecha_fin' => $validated['fecha_fin']
+        ]);
+
+        return redirect()->back()->with('success', 'Residente asignado exitosamente');
+    }
+    // Para obtener residentes disponibles en propietario show
+    private function getResidentesDisponibles()
+    {
+        return User::where('rol', 'residente')
+            ->whereDoesntHave('departamentosResidente', function($query) {
+                $query->whereNull('fecha_fin')
+                    ->orWhere('fecha_fin', '>=', now());
+            })
+            ->get();
+    }
+
+    public function propietarioShow(User $user)
+    {
+        $edificios = $user->edificiosPropietario()->with(['departamentos.residentes', 'departamentos.medidores'])->get();
+        $residentesDisponibles = $this->getResidentesDisponibles();
+        
+        return view('admin.propietarios.show', compact('user', 'edificios', 'residentesDisponibles'));
     }
 }

@@ -173,5 +173,56 @@ Route::middleware(['auth', 'verified', 'role:administrador'])->prefix('admin')->
     
     // Reportes
     Route::get('/reportes', [AdminController::class, 'reportes'])->name('reportes');
+});// Rutas para administrador
+Route::middleware(['auth', 'verified', 'role:administrador'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    
+    // Gestión de Usuarios
+    Route::get('/usuarios', [AdminController::class, 'usuarios'])->name('usuarios');
+    Route::get('/usuarios/crear', [AdminController::class, 'crearUsuario'])->name('usuarios.crear');
+    Route::post('/usuarios', [AdminController::class, 'guardarUsuario'])->name('usuarios.guardar');
+    Route::get('/usuarios/{user}/editar', [AdminController::class, 'editarUsuario'])->name('usuarios.editar');
+    Route::put('/usuarios/{user}', [AdminController::class, 'actualizarUsuario'])->name('usuarios.actualizar');
+    Route::delete('/usuarios/{user}', [AdminController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
+    Route::post('/usuarios/{user}/desvincular', [AdminController::class, 'desvincularDepartamentos'])->name('usuarios.desvincular');
+    
+    // Gestión de Propietarios y Edificios
+    Route::get('/propietarios', [AdminController::class, 'propietarios'])->name('propietarios');
+    Route::get('/propietarios/{user}', [AdminController::class, 'propietarioShow'])->name('propietarios.show');
+    Route::post('/propietarios/{user}/edificios', [AdminController::class, 'crearEdificio'])->name('edificios.crear');
+    Route::post('/edificios/{edificio}/departamentos', [AdminController::class, 'crearDepartamento'])->name('departamentos.crear');
+    Route::post('/departamentos/{departamento}/residentes', [AdminController::class, 'asignarResidente'])->name('residentes.asignar');
+    Route::delete('/edificios/{edificio}', [AdminController::class, 'eliminarEdificio'])->name('edificios.eliminar');
+    Route::delete('/departamentos/{departamento}', [AdminController::class, 'eliminarDepartamento'])->name('departamentos.eliminar');
+    Route::post('/departamentos/{departamento}/residentes/{residente}/desvincular', [AdminController::class, 'desvincularResidente'])->name('residentes.desvincular');
+    // Gestión de Equipos
+    Route::get('/equipos', [AdminController::class, 'equipos'])->name('equipos');
+    Route::get('/medidores', [AdminController::class, 'medidores'])->name('medidores');
+    Route::get('/medidores/crear', [AdminController::class, 'crearMedidor'])->name('medidores.crear');
+    Route::post('/medidores', [AdminController::class, 'guardarMedidor'])->name('medidores.guardar');
+    Route::post('/medidores/{medidor}/asignar-gateway', [AdminController::class, 'asignarGateway'])->name('medidores.asignar-gateway');
+    Route::get('/gateways', [AdminController::class, 'gateways'])->name('gateways');
+    Route::get('/gateways/crear', [AdminController::class, 'crearGateway'])->name('gateways.crear');
+    Route::post('/gateways', [AdminController::class, 'guardarGateway'])->name('gateways.guardar');
+    Route::get('/medidores/{medidor}/editar', [AdminController::class, 'editarMedidor'])->name('medidores.editar');
+    Route::put('/medidores/{medidor}', [AdminController::class, 'actualizarMedidor'])->name('medidores.actualizar');
+    Route::delete('/medidores/{medidor}', [AdminController::class, 'eliminarMedidor'])->name('medidores.eliminar');
+    Route::get('/gateways/{gateway}/editar', [AdminController::class, 'editarGateway'])->name('gateways.editar');
+    Route::put('/gateways/{gateway}', [AdminController::class, 'actualizarGateway'])->name('gateways.actualizar');
+    Route::delete('/gateways/{gateway}', [AdminController::class, 'eliminarGateway'])->name('gateways.eliminar');
+    // Gestión de Mantenimientos
+    Route::get('/mantenimientos', [AdminController::class, 'mantenimientos'])->name('mantenimientos');
+    Route::post('/mantenimientos/{mantenimiento}/atender', [AdminController::class, 'atenderMantenimiento'])->name('mantenimientos.atender');
+    
+    // Gestión de Alertas
+    Route::get('/alertas', [AdminController::class, 'alertas'])->name('alertas');
+    Route::post('/alertas/{alerta}/atender', [AdminController::class, 'atenderAlerta'])->name('alertas.atender');
+    
+    // Suscripciones
+    Route::get('/suscripciones', [AdminController::class, 'suscripciones'])->name('suscripciones');
+    
+    // Reportes
+    Route::get('/reportes', [AdminController::class, 'reportes'])->name('reportes');
 });
 require __DIR__.'/auth.php';

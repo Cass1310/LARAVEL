@@ -13,17 +13,8 @@
                     <div class="card text-center bg-primary text-white">
                         <div class="card-body">
                             <i class="bi bi-people fs-1"></i>
-                            <h5 class="card-title mt-2">{{ $metricas['total_propietarios'] }}</h5>
-                            <p class="card-text small">Propietarios</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6 mb-3">
-                    <div class="card text-center bg-info text-white">
-                        <div class="card-body">
-                            <i class="bi bi-person fs-1"></i>
-                            <h5 class="card-title mt-2">{{ $metricas['total_residentes'] }}</h5>
-                            <p class="card-text small">Residentes</p>
+                            <h5 class="card-title mt-2">{{ $metricas['total_usuarios'] }}</h5>
+                            <p class="card-text small">Total Usuarios</p>
                         </div>
                     </div>
                 </div>
@@ -37,25 +28,25 @@
                     </div>
                 </div>
                 <div class="col-md-2 col-6 mb-3">
+                    <div class="card text-center bg-info text-white">
+                        <div class="card-body">
+                            <i class="bi bi-speedometer2 fs-1"></i>
+                            <h5 class="card-title mt-2">{{ $metricas['total_medidores'] }}</h5>
+                            <p class="card-text small">Medidores</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
                     <div class="card text-center bg-warning text-dark">
                         <div class="card-body">
-                            <i class="bi bi-shield-check fs-1"></i>
-                            <h5 class="card-title mt-2">{{ $metricas['suscripciones_activas'] }}</h5>
-                            <p class="card-text small">Suscripciones Activas</p>
+                            <i class="bi bi-bell fs-1"></i>
+                            <h5 class="card-title mt-2">{{ $metricas['alertas_pendientes'] }}</h5>
+                            <p class="card-text small">Alertas</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-2 col-6 mb-3">
                     <div class="card text-center bg-danger text-white">
-                        <div class="card-body">
-                            <i class="bi bi-bell fs-1"></i>
-                            <h5 class="card-title mt-2">{{ $metricas['alertas_pendientes'] }}</h5>
-                            <p class="card-text small">Alertas Pendientes</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-6 mb-3">
-                    <div class="card text-center bg-secondary text-white">
                         <div class="card-body">
                             <i class="bi bi-tools fs-1"></i>
                             <h5 class="card-title mt-2">{{ $metricas['mantenimientos_pendientes'] }}</h5>
@@ -63,152 +54,180 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <div class="card text-center bg-secondary text-white">
+                        <div class="card-body">
+                            <i class="bi bi-credit-card fs-1"></i>
+                            <h5 class="card-title mt-2">{{ $metricas['suscripciones_activas'] }}</h5>
+                            <p class="card-text small">Suscripciones</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Estadísticas de Consumo -->
+            <!-- Gráficos Principales -->
             <div class="row mb-4">
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center bg-info text-white">
-                        <div class="card-body">
-                            <i class="bi bi-droplet fs-1"></i>
-                            <h5 class="card-title mt-2">{{ number_format($consumoData['consumo_mensual'], 2) }} m³</h5>
-                            <p class="card-text">Consumo Mensual</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center bg-primary text-white">
-                        <div class="card-body">
-                            <i class="bi bi-water fs-1"></i>
-                            <h5 class="card-title mt-2">{{ number_format($consumoData['consumo_anual'], 2) }} m³</h5>
-                            <p class="card-text">Consumo Anual</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center bg-success text-white">
-                        <div class="card-body">
-                            <i class="bi bi-graph-up fs-1"></i>
-                            <h5 class="card-title mt-2">{{ number_format($consumoData['promedio_mensual'], 2) }} m³</h5>
-                            <p class="card-text">Promedio Mensual</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card text-center bg-warning text-dark">
-                        <div class="card-body">
-                            <i class="bi bi-trophy fs-1"></i>
-                            <h5 class="card-title mt-2">
-                                {{ $consumoData['edificio_mayor_consumo']->nombre ?? 'N/A' }}
+                <!-- Consumo por Edificio -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-water me-2"></i>Consumo por Edificio (m³)
                             </h5>
-                            <p class="card-text">Mayor Consumo</p>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="consumoEdificioChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagos por Edificio -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-currency-dollar me-2"></i>Pagos por Edificio
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="pagosEdificioChart" height="250"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Suscripciones -->
-            <div class="card mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-credit-card me-2"></i>Estado de Suscripciones
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Tipo</th>
-                                    <th>Inicio</th>
-                                    <th>Fin</th>
-                                    <th>Estado</th>
-                                    <th>Días Restantes</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($suscripciones as $suscripcion)
-                                    @php
-                                        $dias = (int) now()->diffInDays($suscripcion->fecha_fin, false);
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $suscripcion->cliente->user->nombre }}</td>
-                                        <td>
-                                            <span class="badge bg-primary text-capitalize">
-                                                {{ $suscripcion->tipo }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $suscripcion->fecha_inicio->format('d/m/Y') }}</td>
-                                        <td>{{ $suscripcion->fecha_fin->format('d/m/Y') }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $suscripcion->estado == 'activa' ? 'success' : 'secondary' }}">
-                                                {{ ucfirst($suscripcion->estado) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ $dias < 15 ? 'warning' : 'success' }}">
-                                                @if($dias > 0) {{ $dias }} días
-                                                @elseif($dias == 0) Hoy vence
-                                                @else Vencida @endif
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="#" class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-eye"></i> Ver
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+            <!-- Alertas y Mantenimientos Recientes -->
+            <div class="row">
+                <!-- Alertas Recientes -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-bell me-2"></i>Alertas Recientes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if($alertasRecientes->count() > 0)
+                                <div class="list-group">
+                                    @foreach($alertasRecientes as $alerta)
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1 text-capitalize">{{ $alerta->tipo_alerta }}</h6>
+                                                <small>{{ $alerta->fecha_hora->diffForHumans() }}</small>
+                                            </div>
+                                            <p class="mb-1">
+                                                <strong>Edificio:</strong> {{ $alerta->medidor->departamento->edificio->nombre }}<br>
+                                                <strong>Departamento:</strong> {{ $alerta->medidor->departamento->numero_departamento }}<br>
+                                                <strong>Valor:</strong> {{ $alerta->valor_detectado }} m³
+                                            </p>
+                                            <form action="{{ route('admin.alertas.atender', $alerta) }}" method="POST" class="mt-2">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Marcar como Resuelta
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-muted">No hay alertas pendientes.</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Propietarios y Edificios -->
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-buildings me-2"></i>Propietarios y sus Edificios
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Propietario</th>
-                                    <th>Email</th>
-                                    <th>Edificios</th>
-                                    <th>Departamentos</th>
-                                    <th>Residentes</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($propietarios as $propietario)
-                                    <tr>
-                                        <td>{{ $propietario->nombre }}</td>
-                                        <td>{{ $propietario->email }}</td>
-                                        <td>{{ $propietario->edificiosPropietario->count() }}</td>
-                                        <td>{{ $propietario->edificiosPropietario->sum('departamentos.count') }}</td>
-                                        <td>{{ $propietario->edificiosPropietario->sum(function($edificio) {
-                                            return $edificio->departamentos->sum('residentes.count');
-                                        }) }}</td>
-                                        <td>
-                                            <a href="#" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye"></i> Detalles
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                <!-- Mantenimientos Recientes -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-tools me-2"></i>Mantenimientos Recientes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if($mantenimientosRecientes->count() > 0)
+                                <div class="list-group">
+                                    @foreach($mantenimientosRecientes as $mantenimiento)
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1 text-capitalize">{{ $mantenimiento->tipo }}</h6>
+                                                <small>{{ $mantenimiento->fecha->format('d/m/Y') }}</small>
+                                            </div>
+                                            <p class="mb-1">
+                                                <strong>Edificio:</strong> {{ $mantenimiento->medidor->departamento->edificio->nombre }}<br>
+                                                <strong>Departamento:</strong> {{ $mantenimiento->medidor->departamento->numero_departamento }}<br>
+                                                <strong>Costo:</strong> S/ {{ number_format($mantenimiento->costo, 2) }}
+                                            </p>
+                                            <form action="{{ route('admin.mantenimientos.atender', $mantenimiento) }}" method="POST" class="mt-2">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Marcar como Atendido
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-muted">No hay mantenimientos recientes.</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Gráfico de consumo por edificio
+                const consumoData = @json($consumoPorEdificio);
+                new Chart(document.getElementById('consumoEdificioChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: consumoData.map(item => item.edificio),
+                        datasets: [{
+                            label: 'Consumo (m³)',
+                            data: consumoData.map(item => item.consumo),
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Gráfico de pagos por edificio
+                const pagosData = @json($pagosPorEdificio);
+                new Chart(document.getElementById('pagosEdificioChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: pagosData.map(item => item.edificio),
+                        datasets: [{
+                            label: 'Pagos (S/)',
+                            data: pagosData.map(item => item.total_pagado),
+                            backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

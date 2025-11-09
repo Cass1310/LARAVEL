@@ -22,35 +22,108 @@
                                     <tr>
                                         <th>Fecha</th>
                                         <th>Medidor</th>
-                                        <th>Tipo</th>
+                                        <th>Edificio/Depto</th>
+                                        <th>Tipo / Cobertura</th>
+                                        <th>Estado</th>
                                         <th>Costo</th>
                                         <th>Descripción</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($mantenimientos as $mantenimiento)
                                         <tr>
-                                            <td>{{ $mantenimiento->fecha->format('d/m/Y') }}</td>
-                                            <td>{{ $mantenimiento->medidor->codigo_lorawan }}</td>
                                             <td>
-                                                <span class="badge bg-primary text-capitalize">
+                                                {{ $mantenimiento->fecha->format('d/m/Y') }}
+                                                @if($mantenimiento->fecha->isPast())
+                                                    <br><span class="badge bg-secondary">Pasado</span>
+                                                @elseif($mantenimiento->fecha->isToday())
+                                                    <br><span class="badge bg-warning">Hoy</span>
+                                                @else
+                                                    <br><span class="badge bg-success">Futuro</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <small>{{ $mantenimiento->medidor->codigo_lorawan }}</small>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    {{ $mantenimiento->medidor->departamento->edificio->nombre }}<br>
+                                                    Depto. {{ $mantenimiento->medidor->departamento->numero_departamento }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ $mantenimiento->tipo == 'preventivo' ? 'info' : ($mantenimiento->tipo == 'correctivo' ? 'warning' : 'primary') }} text-capitalize">
                                                     {{ $mantenimiento->tipo }}
                                                 </span>
+                                                <span class="badge bg-{{ $mantenimiento->cobertura == 'incluido_suscripcion' ? 'success' : 'secondary' }}">
+                                                    {{ str_replace('_', ' ', ucfirst($mantenimiento->cobertura)) }}
+                                                </span>
                                             </td>
-                                            <td>Bs./ {{ number_format($mantenimiento->costo, 2) }}</td>
-                                            <td>{{ Str::limit($mantenimiento->descripcion, 50) }}</td>
+                                            <td>
+                                                    <span class="badge bg-{{ $mantenimiento->fecha->isFuture() ? 'warning' : 'success' }}">
+                                                        {{ $mantenimiento->fecha->isFuture() ? 'Programado' : 'Completado' }}
+                                                    </span>
+                                                </td>
+                                            <td>
+                                                <strong>Bs./ {{ number_format($mantenimiento->costo, 2) }}</strong>
+                                            </td>
+                                            <td>
+                                                <span data-bs-toggle="tooltip" data-bs-title="{{ $mantenimiento->descripcion }}">
+                                                    {{ Str::limit($mantenimiento->descripcion, 30) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ route('propietario.mantenimientos.editar', $mantenimiento) }}" 
+                                                       class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <form action="{{ route('propietario.mantenimientos.eliminar', $mantenimiento) }}" 
+                                                          method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-outline-danger" 
+                                                                data-bs-toggle="tooltip" title="Eliminar"
+                                                                onclick="return confirm('¿Estás seguro de eliminar este mantenimiento?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Paginación -->
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $mantenimientos->links() }}
+                        </div>
                     @else
-                        <div class="alert alert-info">
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle me-2"></i>
                             No hay mantenimientos programados.
+                            <a href="{{ route('propietario.mantenimientos.crear') }}" class="alert-link">
+                                Programar el primer mantenimiento
+                            </a>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        // Inicializar tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        });
+    </script>
+    @endpush
 </x-app-layout>

@@ -104,6 +104,18 @@ Route::middleware(['auth', 'verified', 'role:propietario'])->prefix('propietario
         Route::post('/{consumo}/procesar', [PropietarioController::class, 'procesarPago'])->name('procesar');
         Route::get('/{consumo}/detalle', [PropietarioController::class, 'detallePago'])->name('detalle');
     });
+    // Rutas de mantenimientos
+    Route::prefix('mantenimientos')->name('mantenimientos.')->group(function () {
+        Route::get('/crear', [PropietarioController::class, 'crearMantenimiento'])->name('crear');
+        Route::post('/', [PropietarioController::class, 'guardarMantenimiento'])->name('guardar');
+        Route::get('/{mantenimiento}/editar', [PropietarioController::class, 'editarMantenimiento'])->name('editar');
+        Route::put('/{mantenimiento}', [PropietarioController::class, 'actualizarMantenimiento'])->name('actualizar');
+        Route::delete('/{mantenimiento}', [PropietarioController::class, 'eliminarMantenimiento'])->name('eliminar');
+    });
+
+    // Rutas para cargar datos dinámicos
+    Route::get('/edificios/{edificio}/departamentos', [PropietarioController::class, 'departamentosPorEdificio']);
+    Route::get('/departamentos/{departamento}/medidores', [PropietarioController::class, 'medidoresPorDepartamento']);
 });
 
 // Rutas de suscripción

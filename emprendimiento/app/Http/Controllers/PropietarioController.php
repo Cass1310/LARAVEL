@@ -233,20 +233,103 @@ class PropietarioController extends Controller
         $validated = $request->validate([
             'id_medidor' => 'required|exists:medidor,id',
             'tipo' => 'required|in:preventivo,correctivo,instalacion,calibracion',
-            'cobertura' => 'required|in:incluido_suscripcion,consumodo',
-            'costo' => 'required|numeric|min:0',
             'fecha' => 'required|date',
             'descripcion' => 'required|string|max:200'
         ]);
 
-        // Verificar que el medidor pertenezca al propietario
+        // Se fuerza cobertura a "cobrado"
+        $validated['cobertura'] = 'cobrado';
+
+        // Calcular costo según tipo
+        if ($validated['tipo'] == 'preventivo') {
+            $validated['costo'] = 60;
+        } elseif ($validated['tipo'] == 'correctivo') {
+            $validated['costo'] = 100;
+        } else {
+            $validated['costo'] = 80;
+        }
+
+        // Verificar permiso propietario-medidor
         $medidor = Medidor::find($validated['id_medidor']);
         Gate::authorize('view', $medidor->departamento->edificio);
 
         Mantenimiento::create($validated);
 
         return redirect()->route('propietario.mantenimientos')
-            ->with('success', 'Mantenimiento programado exitosamente');
+            ->with('success', 'Mantenimiento registrado correctamente.');
+    }
+
+
+    // MÉTODOS ADICIONALES PARA MANTENIMIENTOS
+    public function editarMantenimiento(Mantenimiento $mantenimiento)
+    {
+        Gate::authorize('update', $mantenimiento->medidor->departamento->edificio);
+        
+        return view('propietario.mantenimientos.editar', compact('mantenimiento'));
+    }
+
+    public function actualizarMantenimiento(Request $request, Mantenimiento $mantenimiento)
+    {
+        Gate::authorize('update', $mantenimiento->medidor->departamento->edificio);
+
+        $validated = $request->validate([
+            'tipo' => 'required|in:preventivo,correctivo,instalacion,calibracion',
+            'fecha' => 'required|date',
+            'descripcion' => 'required|string|max:200'
+        ]);
+
+        // Forzar cobertura a "cobrado"
+        $validated['cobertura'] = 'cobrado';
+
+        // Calcular costo según tipo
+        if ($validated['tipo'] == 'preventivo') {
+            $validated['costo'] = 60;
+        } elseif ($validated['tipo'] == 'correctivo') {
+            $validated['costo'] = 100;
+        } else {
+            $validated['costo'] = 80;
+        }
+
+        $mantenimiento->update($validated);
+
+        return redirect()->route('propietario.mantenimientos')
+            ->with('success', 'Mantenimiento actualizado correctamente.');
+    }
+
+
+
+    public function eliminarMantenimiento(Mantenimiento $mantenimiento)
+    {
+        Gate::authorize('update', $mantenimiento->medidor->departamento->edificio);
+
+        $mantenimiento->delete();
+
+        return redirect()->route('propietario.mantenimientos')
+            ->with('success', 'Mantenimiento eliminado exitosamente');
+    }
+
+    // MÉTODOS PARA CARGAR DATOS DINÁMICOS
+    public function departamentosPorEdificio(Edificio $edificio)
+    {
+        Gate::authorize('view', $edificio);
+        
+        $departamentos = $edificio->departamentos()
+            ->select('id', 'numero_departamento', 'piso')
+            ->get();
+        
+        return response()->json($departamentos);
+    }
+
+    public function medidoresPorDepartamento(Departamento $departamento)
+    {
+        Gate::authorize('view', $departamento->edificio);
+        
+        $medidores = $departamento->medidores()
+            ->where('estado', 'activo')
+            ->select('id', 'codigo_lorawan', 'estado')
+            ->get();
+        
+        return response()->json($medidores);
     }
 
     // MÉTODOS PARA REPORTES

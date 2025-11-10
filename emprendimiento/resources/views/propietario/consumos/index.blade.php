@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="h4 font-semibold text-gray-800 dark:text-gray-200">
-            {{ __('Consumos de Edificios') }}
+            {{ __('Notas de consumo de Edificios') }}
         </h2>
     </x-slot>
 
@@ -9,9 +9,9 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Lista de Consumos</h5>
+                    <h5 class="card-title mb-0">Lista de Notas de consumo</h5>
                     <a href="{{ route('propietario.consumos.crear') }}" class="btn btn-light btn-sm">
-                        <i class="bi bi-plus-circle me-1"></i>Nueva Consumo
+                        <i class="bi bi-plus-circle me-1"></i>Nueva Nota de consumo
                     </a>
                 </div>
                 <div class="card-body">

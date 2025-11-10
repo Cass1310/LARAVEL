@@ -8,7 +8,7 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if($departamento)
-                <!-- Filtros -->
+                <!-- En residente/reportes/index.blade.php - actualizar la sección de filtros -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <form class="row g-3 align-items-end">
@@ -21,9 +21,20 @@
                                 </select>
                             </div>
                             <div class="col-md-8">
-                                <button type="button" class="btn btn-outline-primary" onclick="exportCharts()">
-                                    <i class="bi bi-download me-1"></i>Exportar Reporte
-                                </button>
+                                <div class="btn-group">
+                                    <a href="{{ route('residente.reportes.exportar-pdf', ['year' => $year]) }}" 
+                                    class="btn btn-outline-danger" target="_blank">
+                                        <i class="bi bi-file-pdf me-1"></i>Exportar PDF
+                                    </a>
+                                    <a href="{{ route('residente.reportes.exportar-excel', ['year' => $year]) }}" 
+                                    class="btn btn-outline-success">
+                                        <i class="bi bi-file-excel me-1"></i>Exportar Excel
+                                    </a>
+                                    <a href="{{ route('residente.historico.consumos') }}" 
+                                    class="btn btn-outline-primary">
+                                        <i class="bi bi-clock-history me-1"></i>Histórico Consumos
+                                    </a>
+                                </div>
                             </div>
                         </form>
                     </div>

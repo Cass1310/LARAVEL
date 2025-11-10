@@ -88,13 +88,21 @@
                                         <small class="text-muted">Estado</small>
                                         <span class="badge 
                                             {{ $consumo->estado == 'pagado' ? 'bg-success' : 
-                                               ($consumo->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-danger') }}">
+                                            ($consumo->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-danger') }}">
                                             {{ ucfirst($consumo->estado) }}
                                         </span>
                                     </div>
                                     <div>
                                         <small class="text-muted">Consumo del mes</small>
                                         <p class="fw-semibold mb-0">{{ $consumo->consumo_m3 }} m³ ({{ $consumo->porcentaje_consumo }}%)</p>
+                                    </div>
+                                    
+                                    <!-- Botón Imprimir -->
+                                    <div class="mt-2">
+                                        <a href="{{ route('residente.consumo.imprimir', $consumo->id) }}" 
+                                        class="btn btn-outline-primary btn-sm" target="_blank">
+                                            <i class="bi bi-printer me-1"></i>Imprimir Nota
+                                        </a>
                                     </div>
                                 </div>
                             @else

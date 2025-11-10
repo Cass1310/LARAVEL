@@ -10,6 +10,10 @@ use App\Models\ConsumoDepartamento;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Exports\ResidenteReporteExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\ResidenteHistoricoExport;
 
 class ResidenteController extends Controller
 {
@@ -226,4 +230,81 @@ class ResidenteController extends Controller
         return $data;
     }
 
+
+    // REPORTES EN PDF
+    public function imprimirConsumo($id)
+    {
+        $user = auth()->user();
+        $consumo = ConsumoDepartamento::where('id', $id)
+            ->whereHas('departamento.residentes', function($query) use ($user) {
+                $query->where('id', $user->id);
+            })
+            ->with(['consumoEdificio.edificio', 'departamento'])
+            ->firstOrFail();
+
+        $pdf = PDF::loadView('residente.reportes.consumo-pdf', compact('consumo'));
+        
+        return $pdf->download('nota-consumo-' . $consumo->consumoEdificio->periodo . '.pdf');
+    }
+    public function exportarReportePdf(Request $request)
+    {
+        $user = auth()->user();
+        $departamento = $user->departamentosResidente()
+            ->where(function($query) {
+                $query->where('fecha_fin', '>=', now())
+                    ->orWhereNull('fecha_fin');
+            })
+            ->firstOrFail();
+
+        $year = $request->input('year', now()->year);
+
+        $consumoMensual = $this->getConsumoMensual($departamento, $year);
+        $alertasMensual = $this->getAlertasMensual($departamento, $year);
+        $pagosMensual = $this->getPagosMensual($departamento, $year);
+        $promedioMensual = count(array_filter($pagosMensual)) > 0 ? array_sum($pagosMensual) / count(array_filter($pagosMensual)) : 0;
+
+        $pdf = Pdf::loadView('residente.reportes.reporte-completo-pdf', compact(
+            'user','departamento', 'consumoMensual', 'alertasMensual', 'pagosMensual', 'year', 'promedioMensual'
+        ));
+
+
+        return $pdf->download('reporte-consumo-' . $year . '.pdf');
+    }
+
+    public function exportarReporteExcel(Request $request)
+    {
+        $user = auth()->user();
+        $year = $request->input('year', now()->year);
+        
+        return Excel::download(new ResidenteReporteExport($user, $year), 'reporte-consumo-' . $year . '.xlsx');
+    }
+
+    public function historicoConsumos()
+    {
+        $user = auth()->user();
+        $departamento = $user->departamentosResidente()
+            ->where(function($query) {
+                $query->where('fecha_fin', '>=', now())
+                    ->orWhereNull('fecha_fin');
+            })
+            ->firstOrFail();
+
+        // Últimos 5 meses
+        $consumos = ConsumoDepartamento::where('id_departamento', $departamento->id)
+            ->with('consumoEdificio')
+            ->whereHas('consumoEdificio', function($query) {
+                $query->where('fecha_emision', '>=', now()->subMonths(5));
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('residente.reportes.historico-consumos', compact('consumos', 'departamento'));
+    }
+
+    public function exportarHistoricoExcel()
+    {
+        $user = auth()->user();
+        
+        return Excel::download(new ResidenteHistoricoExport($user), 'historico-consumos.xlsx');
+    }
 }

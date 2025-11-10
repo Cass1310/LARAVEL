@@ -70,6 +70,12 @@ Route::middleware(['auth', 'verified', 'role:residente'])->prefix('residente')->
     Route::get('/reportes', [ResidenteController::class, 'reportes'])->name('reportes');
     Route::post('/mantenimiento', [ResidenteController::class, 'solicitarMantenimiento'])
     ->name('solicitar.mantenimiento');
+    // En rutas de residente
+    Route::get('/consumo/{id}/imprimir', [ResidenteController::class, 'imprimirConsumo'])->name('consumo.imprimir');
+    Route::get('/reportes/exportar-pdf', [ResidenteController::class, 'exportarReportePdf'])->name('reportes.exportar-pdf');
+    Route::get('/reportes/exportar-excel', [ResidenteController::class, 'exportarReporteExcel'])->name('reportes.exportar-excel');
+    Route::get('/historico-consumos', [ResidenteController::class, 'historicoConsumos'])->name('historico.consumos');
+    Route::get('/historico-consumos/excel', [ResidenteController::class, 'exportarHistoricoExcel'])->name('historico.excel');
 });
 
 // Rutas para propietarios

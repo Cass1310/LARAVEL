@@ -169,27 +169,33 @@
                                             $totalConsumo = array_sum($consumoData);
                                             $meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
                                         @endphp
-                                        @for($i = 1; $i <= 12; $i++)
-                                            @if(isset($consumoData[$i]))
-                                                <tr>
-                                                    <td>{{ $meses[$i-1] }}</td>
-                                                    <td>{{ number_format($consumoData[$i], 2) }}</td>
-                                                    <td>
-                                                        <div class="progress" style="height: 20px;">
-                                                            <div class="progress-bar bg-info" 
-                                                                 style="width: {{ ($consumoData[$i] / $totalConsumo) * 100 }}%">
-                                                                {{ round(($consumoData[$i] / $totalConsumo) * 100, 1) }}%
+                                        @if ($totalConsumo == 0)
+                                            <div class="alert alert-warning text-center">
+                                                No hay registros de consumo para este edificio en el año seleccionado.
+                                            </div>
+                                        @else
+                                            @for($i = 1; $i <= 12; $i++)
+                                                @if(isset($consumoData[$i]))
+                                                    <tr>
+                                                        <td>{{ $meses[$i-1] }}</td>
+                                                        <td>{{ number_format($consumoData[$i], 2) }}</td>
+                                                        <td>
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar bg-info" 
+                                                                    style="width: {{ ($consumoData[$i] / $totalConsumo) * 100 }}%">
+                                                                    {{ round(($consumoData[$i] / $totalConsumo) * 100, 1) }}%
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endif
-                                        @endfor
-                                        <tr class="table-primary">
-                                            <td><strong>Total</strong></td>
-                                            <td><strong>{{ number_format($totalConsumo, 2) }}</strong></td>
-                                            <td><strong>100%</strong></td>
-                                        </tr>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            @endfor
+                                            <tr class="table-primary">
+                                                <td><strong>Total</strong></td>
+                                                <td><strong>{{ number_format($totalConsumo, 2) }}</strong></td>
+                                                <td><strong>100%</strong></td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -217,27 +223,33 @@
                                         @php
                                             $totalFacturacion = array_sum($consumosData);
                                         @endphp
-                                        @for($i = 1; $i <= 12; $i++)
-                                            @if(isset($consumosData[$i]))
-                                                <tr>
-                                                    <td>{{ $meses[$i-1] }}</td>
-                                                    <td>Bs./ {{ number_format($consumosData[$i], 2) }}</td>
-                                                    <td>
-                                                        <div class="progress" style="height: 20px;">
-                                                            <div class="progress-bar bg-success" 
-                                                                 style="width: {{ ($consumosData[$i] / $totalFacturacion) * 100 }}%">
-                                                                {{ round(($consumosData[$i] / $totalFacturacion) * 100, 1) }}%
+                                        @if ($totalFacturacion == 0)
+                                            <div class="alert alert-warning text-center">
+                                                No hay registros de facturación para este edificio en el año seleccionado.
+                                            </div>
+                                        @else
+                                            @for($i = 1; $i <= 12; $i++)
+                                                @if(isset($consumosData[$i]))
+                                                    <tr>
+                                                        <td>{{ $meses[$i-1] }}</td>
+                                                        <td>Bs./ {{ number_format($consumosData[$i], 2) }}</td>
+                                                        <td>
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar bg-success" 
+                                                                    style="width: {{ ($consumosData[$i] / $totalFacturacion) * 100 }}%">
+                                                                    {{ round(($consumosData[$i] / $totalFacturacion) * 100, 1) }}%
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endif
-                                        @endfor
-                                        <tr class="table-success">
-                                            <td><strong>Total</strong></td>
-                                            <td><strong>Bs./ {{ number_format($totalFacturacion, 2) }}</strong></td>
-                                            <td><strong>100%</strong></td>
-                                        </tr>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            @endfor
+                                            <tr class="table-success">
+                                                <td><strong>Total</strong></td>
+                                                <td><strong>Bs./ {{ number_format($totalFacturacion, 2) }}</strong></td>
+                                                <td><strong>100%</strong></td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>

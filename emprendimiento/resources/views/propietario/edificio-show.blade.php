@@ -61,13 +61,12 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- consumos Pendientes por Residente -->
                 <div class="col-lg-6 mb-4">
                     <div class="card">
                         <div class="card-header bg-warning text-dark">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-receipt me-2"></i>consumos del Mes por Residente
+                                <i class="bi bi-receipt me-2"></i>Notas de consumo del Mes por Departamento
                             </h5>
                         </div>
                         <div class="card-body">
@@ -76,8 +75,8 @@
                                     <table class="table table-sm">
                                         <thead>
                                             <tr>
-                                                <th>Residente</th>
-                                                <th>Depto</th>
+                                                <th>Departamento</th>
+                                                <th>Residentes</th>
                                                 <th>Consumo</th>
                                                 <th>Monto</th>
                                                 <th>Estado</th>
@@ -87,9 +86,11 @@
                                             @foreach($consumosResidentes as $consumo)
                                                 <tr>
                                                     <td>
-                                                        <div class="fw-semibold">{{ $consumo['residente'] }}</div>
+                                                        <div class="fw-semibold">{{ $consumo['departamento'] }}</div>
                                                     </td>
-                                                    <td>{{ $consumo['departamento'] }}</td>
+                                                    <td>
+                                                        <small class="text-muted">{{ $consumo['residente'] }}</small>
+                                                    </td>
                                                     <td>
                                                         <small>{{ number_format($consumo['consumo_m3'], 2) }} m³</small>
                                                         <br>
@@ -128,7 +129,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Resumen Financiero -->
             <div class="row">
                 <div class="col-12">
@@ -180,62 +180,87 @@
     </div>
 
     @if(count($consumoPorResidente) > 0)
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const consumoData = @json($consumoPorResidente);
-            
-            const labels = consumoData.map(item => 
-                `${item.residente} (Depto ${item.departamento})`
-            );
-            const data = consumoData.map(item => item.consumo);
-            
-            // Colores para la gráfica
-            const backgroundColors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
-                '#8AC926', '#1982C4', '#6A4C93', '#F15BB5'
-            ];
+        @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const consumoData = @json($consumoPorResidente);
+                
+                // Limitar la longitud de las etiquetas para mejor visualización
+                const labels = consumoData.map(item => 
+                    `Depto ${item.departamento}`
+                );
+                const data = consumoData.map(item => item.consumo);
+                
+                // Tooltips más informativos
+                const tooltipLabels = consumoData.map(item => 
+                    `Depto ${item.departamento}: ${item.residente}`
+                );
 
-            new Chart(document.getElementById('consumoResidenteChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: backgroundColors.slice(0, labels.length),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                font: {
-                                    size: 10
+                // Colores para la gráfica
+                const backgroundColors = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+                    '#8AC926', '#1982C4', '#6A4C93', '#F15BB5'
+                ];
+
+                new Chart(document.getElementById('consumoResidenteChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: backgroundColors.slice(0, labels.length),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    font: {
+                                        size: 10
+                                    },
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const meta = chart.getDatasetMeta(0);
+                                                const style = meta.controller.getStyle(i);
+                                                
+                                                return {
+                                                    text: label,
+                                                    fillStyle: style.backgroundColor,
+                                                    strokeStyle: style.borderColor,
+                                                    lineWidth: style.borderWidth,
+                                                    hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
                                 }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return `${label}: ${value} m³ (${percentage}%)`;
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = tooltipLabels[context.dataIndex] || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${value} m³ (${percentage}%)`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
+                });
             });
-        });
-    </script>
-    @endpush
+        </script>
+        @endpush
     @endif
 </x-app-layout>

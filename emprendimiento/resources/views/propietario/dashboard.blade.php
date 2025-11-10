@@ -50,7 +50,7 @@
                         <div class="card-body">
                             <i class="bi bi-receipt fs-1"></i>
                             <h5 class="card-title mt-2">{{ $metricas['consumos_pendientes'] }}</h5>
-                            <p class="card-text small">Consumos Pendientes</p>
+                            <p class="card-text small">Notas de consumo Pendientes</p>
                         </div>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                     <div class="card">
                         <div class="card-header bg-success text-white">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-bar-chart me-2"></i>Consumos por Edificio
+                                <i class="bi bi-bar-chart me-2"></i>Notas de consumos por Edificio
                             </h5>
                         </div>
                         <div class="card-body">
@@ -101,7 +101,7 @@
                     <a href="{{ route('propietario.consumos') }}" class="card text-center text-decoration-none">
                         <div class="card-body">
                             <i class="bi bi-receipt fs-1 text-success"></i>
-                            <h6 class="card-title mt-2">Consumos</h6>
+                            <h6 class="card-title mt-2">Notas de consumo</h6>
                         </div>
                     </a>
                 </div>

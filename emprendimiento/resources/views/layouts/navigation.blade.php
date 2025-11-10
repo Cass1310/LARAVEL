@@ -40,7 +40,7 @@
                                 <i class="bi bi-building me-1"></i>{{ __('Mis Edificios') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.consumos')" :active="request()->routeIs('propietario.consumos*')">
-                                <i class="bi bi-droplet-half me-1"></i>{{ __('Consumos') }}
+                                <i class="bi bi-droplet-half me-1"></i>{{ __('Notas de consumo') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.residentes')" :active="request()->routeIs('propietario.residentes*')">
                                 <i class="bi bi-people me-1"></i>{{ __('Residentes') }}
@@ -188,7 +188,7 @@
                         {{ __('Mis Edificios') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('propietario.consumos')" :active="request()->routeIs('propietario.consumos*')">
-                        {{ __('Consumos') }}
+                        {{ __('Notas de Consumo') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('propietario.residentes')" :active="request()->routeIs('propietario.residentes*')">
                         {{ __('Residentes') }}

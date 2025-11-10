@@ -594,21 +594,37 @@ class PropietarioController extends Controller
         $data = [];
 
         foreach ($edificio->departamentos as $departamento) {
-            foreach ($departamento->residentes as $residente) {
-                $consumo = $departamento->medidores->sum(function($medidor) use ($currentMonth) {
-                    return $medidor->consumos()
-                        ->whereYear('fecha_hora', substr($currentMonth, 0, 4))
-                        ->whereMonth('fecha_hora', substr($currentMonth, 5, 2))
-                        ->sum('volumen');
-                });
+            // Calcular consumo total del departamento
+            $consumo = $departamento->medidores->sum(function($medidor) use ($currentMonth) {
+                return $medidor->consumos()
+                    ->whereYear('fecha_hora', substr($currentMonth, 0, 4))
+                    ->whereMonth('fecha_hora', substr($currentMonth, 5, 2))
+                    ->sum('volumen');
+            });
 
-                if ($consumo > 0) {
-                    $data[] = [
-                        'residente' => $residente->nombre,
-                        'departamento' => $departamento->numero_departamento,
-                        'consumo' => $consumo
-                    ];
+            if ($consumo > 0) {
+                // Obtener residentes con formato controlado
+                $residentes = $departamento->residentes;
+                $residentesNombres = '';
+                
+                if ($residentes->count() > 0) {
+                    if ($residentes->count() <= 2) {
+                        // Mostrar todos los nombres si son 2 o menos
+                        $residentesNombres = $residentes->pluck('nombre')->implode(', ');
+                    } else {
+                        // Mostrar el primero y "y X más" si son más de 2
+                        $primerResidente = $residentes->first()->nombre;
+                        $cantidadRestantes = $residentes->count() - 1;
+                        $residentesNombres = $primerResidente . " y " . $cantidadRestantes . " más";
+                    }
                 }
+
+                $data[] = [
+                    'residente' => $residentesNombres,
+                    'departamento' => $departamento->numero_departamento,
+                    'consumo' => $consumo,
+                    'total_residentes' => $residentes->count()
+                ];
             }
         }
 
@@ -626,18 +642,21 @@ class PropietarioController extends Controller
             ->whereHas('departamento.residentes')
             ->with(['departamento.residentes', 'consumoEdificio'])
             ->get()
-            ->flatMap(function($consumoDepto) {
-                return $consumoDepto->departamento->residentes->map(function($residente) use ($consumoDepto) {
-                    return [
-                        'residente' => $residente->nombre,
-                        'departamento' => $consumoDepto->departamento->numero_departamento,
-                        'monto_asignado' => $consumoDepto->monto_asignado,
-                        'consumo_m3' => $consumoDepto->consumo_m3,
-                        'porcentaje_consumo' => $consumoDepto->porcentaje_consumo,
-                        'estado' => $consumoDepto->estado,
-                        'fecha_vencimiento' => $consumoDepto->consumoEdificio->fecha_vencimiento
-                    ];
-                });
+            ->map(function($consumoDepto) {
+                // Obtener todos los residentes del departamento separados por coma
+                $residentesNombres = $consumoDepto->departamento->residentes
+                    ->pluck('nombre')
+                    ->implode(', ');
+
+                return [
+                    'residente' => $residentesNombres,
+                    'departamento' => $consumoDepto->departamento->numero_departamento,
+                    'monto_asignado' => $consumoDepto->monto_asignado,
+                    'consumo_m3' => $consumoDepto->consumo_m3,
+                    'porcentaje_consumo' => $consumoDepto->porcentaje_consumo,
+                    'estado' => $consumoDepto->estado,
+                    'fecha_vencimiento' => $consumoDepto->consumoEdificio->fecha_vencimiento
+                ];
             });
     }
     // paga la factura edificio y las demas

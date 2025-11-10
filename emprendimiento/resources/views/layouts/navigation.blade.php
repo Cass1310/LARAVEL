@@ -9,54 +9,57 @@
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
                 </div>
-
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">                    
                     @auth
+                        {{-- RESIDENTE --}}
                         @if(Auth::user()->rol === 'residente')
                             <x-nav-link :href="route('residente.dashboard')" :active="request()->routeIs('residente.dashboard')">
-                                {{ __('Dashboard') }}
+                                <i class="bi bi-speedometer2 me-1"></i>{{ __('Dashboard') }}
                             </x-nav-link>
                             <x-nav-link :href="route('residente.departamento')" :active="request()->routeIs('residente.departamento')">
-                                {{ __('Mi Departamento') }}
+                                <i class="bi bi-house-door me-1"></i>{{ __('Mi Departamento') }}
                             </x-nav-link>
                             <x-nav-link :href="route('residente.alertas')" :active="request()->routeIs('residente.alertas')">
-                                {{ __('Alertas') }}
+                                <i class="bi bi-bell me-1"></i>{{ __('Alertas') }}
                             </x-nav-link>
                             <x-nav-link :href="route('residente.mantenimientos')" :active="request()->routeIs('residente.mantenimientos')">
-                                {{ __('Mantenimiento') }}
+                                <i class="bi bi-tools me-1"></i>{{ __('Mantenimiento') }}
                             </x-nav-link>
                             <x-nav-link :href="route('residente.reportes')" :active="request()->routeIs('residente.reportes')">
-                                {{ __('Reportes') }}
+                                <i class="bi bi-graph-up me-1"></i>{{ __('Reportes') }}
                             </x-nav-link>
                         @endif
 
+                        {{-- PROPIETARIO --}}
                         @if(Auth::user()->rol === 'propietario')
                             <x-nav-link :href="route('propietario.dashboard')" :active="request()->routeIs('propietario.dashboard')">
-                                {{ __('Dashboard') }}
+                                <i class="bi bi-speedometer2 me-1"></i>{{ __('Dashboard') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.edificios')" :active="request()->routeIs('propietario.edificios')">
-                                {{ __('Mis Edificios') }}
+                                <i class="bi bi-building me-1"></i>{{ __('Mis Edificios') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.consumos')" :active="request()->routeIs('propietario.consumos*')">
-                                {{ __('Consumos') }}
+                                <i class="bi bi-droplet-half me-1"></i>{{ __('Consumos') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.residentes')" :active="request()->routeIs('propietario.residentes*')">
-                                {{ __('Residentes') }}
+                                <i class="bi bi-people me-1"></i>{{ __('Residentes') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.alertas')" :active="request()->routeIs('propietario.alertas')">
-                                {{ __('Alertas') }}
+                                <i class="bi bi-bell me-1"></i>{{ __('Alertas') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.mantenimientos')" :active="request()->routeIs('propietario.mantenimientos*')">
-                                {{ __('Mantenimiento') }}
+                                <i class="bi bi-tools me-1"></i>{{ __('Mantenimiento') }}
                             </x-nav-link>
                             <x-nav-link :href="route('propietario.reportes')" :active="request()->routeIs('propietario.reportes')">
-                                {{ __('Reportes') }}
+                                <i class="bi bi-graph-up me-1"></i>{{ __('Reportes') }}
                             </x-nav-link>
-                                <x-nav-link :href="route('propietario.pagos.index')" :active="request()->routeIs('propietario.pagos*')">
-                                {{ __('Pagos') }}
+                            <x-nav-link :href="route('propietario.pagos.index')" :active="request()->routeIs('propietario.pagos*')">
+                                <i class="bi bi-credit-card me-1"></i>{{ __('Pagos') }}
                             </x-nav-link>
                         @endif
+
+                        {{-- ADMINISTRADOR (igual que ya tenías) --}}
                         @if(Auth::user()->rol === 'administrador')
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">

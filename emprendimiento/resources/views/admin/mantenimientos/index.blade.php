@@ -95,7 +95,7 @@
                                                 {{ str_replace('_', ' ', ucfirst($mantenimiento->cobertura)) }}
                                             </span>
                                         </td>
-                                        <td>S/ {{ number_format($mantenimiento->costo, 2) }}</td>
+                                        <td>Bs.  {{ number_format($mantenimiento->costo, 2) }}</td>
                                         <td>{{ Str::limit($mantenimiento->descripcion, 50) }}</td>
                                         <td>
                                             <span class="badge bg-{{ 

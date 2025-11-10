@@ -211,7 +211,7 @@
                     data: {
                         labels: pagosData.map(item => item.edificio),
                         datasets: [{
-                            label: 'Pagos (S/)',
+                            label: 'Pagos (Bs. )',
                             data: pagosData.map(item => item.total_pagado),
                             backgroundColor: 'rgba(40, 167, 69, 0.6)',
                             borderColor: 'rgba(40, 167, 69, 1)',

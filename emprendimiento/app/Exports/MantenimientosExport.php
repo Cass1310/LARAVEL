@@ -48,7 +48,7 @@ class MantenimientosExport implements FromCollection, WithHeadings, WithMapping,
             'Edificio',
             'Tipo',
             'Cobertura',
-            'Costo (S/)',
+            'Costo (Bs. )',
             'Descripción',
             'Estado'
         ];

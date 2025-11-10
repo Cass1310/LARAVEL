@@ -94,15 +94,6 @@
 
             <!-- Right Side Of Navbar -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <!-- Suscripción Link -->
-                @auth
-                    @if(in_array(Auth::user()->rol, ['propietario']))
-                        <x-nav-link :href="route('suscripcion.index')" :active="request()->routeIs('suscripcion*')" class="me-4">
-                            <i class="bi bi-credit-card me-1"></i>{{ __('Suscripción') }}
-                        </x-nav-link>
-                    @endif
-                @endauth
-
                 <!-- Settings Dropdown -->
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -202,9 +193,6 @@
                     <x-responsive-nav-link :href="route('propietario.reportes')" :active="request()->routeIs('propietario.reportes')">
                         {{ __('Reportes') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('suscripcion.index')" :active="request()->routeIs('suscripcion*')">
-                        {{ __('Suscripción') }}
-                    </x-responsive-nav-link>
                 @endif
                 @if(Auth::user()->rol === 'administrador')
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
@@ -247,12 +235,6 @@
                     <i class="bi bi-person me-2"></i>{{ __('Perfil') }}
                 </x-responsive-nav-link>
 
-                @if(in_array(Auth::user()->rol, ['propietario']))
-                    <x-responsive-nav-link :href="route('suscripcion.index')">
-                        <i class="bi bi-credit-card me-2"></i>{{ __('Suscripción') }}
-                    </x-responsive-nav-link>
-                @endif
-
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -265,4 +247,4 @@
             </div>
         </div>
     </div>
-</nav>
+</nav

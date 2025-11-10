@@ -27,11 +27,22 @@ class Edificio extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-
     public function departamentos()
     {
         return $this->hasMany(Departamento::class, 'id_edificio');
     }
+    public function medidores()
+    {
+        return $this->hasManyThrough(
+            Medidor::class,      // Modelo final
+            Departamento::class, // Modelo intermedio
+            'id_edificio',       // FK de Departamento en Edificio
+            'id_departamento',   // FK de Medidor en Departamento
+            'id',                // PK de Edificio
+            'id'                 // PK de Departamento
+        );
+    }
+
     public function consumos()
     {
         return $this->hasMany(ConsumoEdificio::class, 'id_edificio');

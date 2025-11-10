@@ -109,6 +109,19 @@ Route::middleware(['auth', 'verified', 'role:propietario'])->prefix('propietario
         Route::put('/{mantenimiento}', [PropietarioController::class, 'actualizarMantenimiento'])->name('actualizar');
         Route::delete('/{mantenimiento}', [PropietarioController::class, 'eliminarMantenimiento'])->name('eliminar');
     });
+    // Reportes de notas de consumo
+    Route::prefix('reportes')->name('reportes.')->group(function () {
+        Route::get('/edificios/{edificio}/notas-consumo', [PropietarioController::class, 'reporteNotasConsumo'])->name('notas-consumo');
+        Route::get('/edificios/{edificio}/notas-consumo/exportar-pdf', [PropietarioController::class, 'exportarNotasConsumoPdf'])->name('notas-consumo.exportar-pdf');
+        Route::get('/edificios/{edificio}/notas-consumo/exportar-excel', [PropietarioController::class, 'exportarNotasConsumoExcel'])->name('notas-consumo.exportar-excel');
+        Route::get('/todas-notas-consumo', [PropietarioController::class, 'reporteTodasNotasConsumo'])->name('todas-notas-consumo');
+        Route::get('/todas-notas-consumo/exportar-pdf', [PropietarioController::class, 'exportarTodasNotasConsumoPdf'])->name('todas-notas-consumo.exportar-pdf');
+        Route::get('/todas-notas-consumo/exportar-excel', [PropietarioController::class, 'exportarTodasNotasConsumoExcel'])->name('todas-notas-consumo.exportar-excel');
+    });
+    // En rutas de propietario
+    Route::get('/reportes/exportar-pdf', [PropietarioController::class, 'exportarReportePdf'])->name('reportes.exportar-pdf');
+    Route::get('/reportes/exportar-excel', [PropietarioController::class, 'exportarReporteExcel'])->name('reportes.exportar-excel');
+    Route::get('/reportes/exportar-detallado-excel', [PropietarioController::class, 'exportarReporteDetalladoExcel'])->name('reportes.exportar-detallado-excel');
     Route::get('/edificios/{edificio}/departamentos', [PropietarioController::class, 'departamentosPorEdificio']);
     Route::get('/departamentos/{departamento}/medidores', [PropietarioController::class, 'medidoresPorDepartamento']);
 });

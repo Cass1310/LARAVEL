@@ -47,8 +47,6 @@
                                 <select class="form-select" name="metodo_pago" required>
                                     <option value="">Seleccionar método</option>
                                     <option value="transferencia">Transferencia Bancaria</option>
-                                    <option value="deposito">Depósito</option>
-                                    <option value="efectivo">Efectivo</option>
                                     <option value="tarjeta">Tarjeta de Crédito/Débito</option>
                                 </select>
                             </div>

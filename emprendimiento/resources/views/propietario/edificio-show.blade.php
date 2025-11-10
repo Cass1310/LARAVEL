@@ -7,7 +7,6 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Información del Edificio -->
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="card-title mb-0">Información General</h5>
@@ -173,7 +172,10 @@
             <!-- Botón Volver -->
             <div class="mt-4">
                 <a href="{{ route('propietario.edificios') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Volver a Edificios
+                    <i class="bi bi-arrow-left me-1"></i>Volver al Edificio
+                </a>
+                <a href="{{ route('propietario.reportes.notas-consumo', $edificio->id) }}" class="btn btn-primary">
+                    <i class="bi bi-file-earmark-text me-1"></i>Generar Reporte de Notas
                 </a>
             </div>
         </div>

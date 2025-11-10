@@ -15,6 +15,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Exports\PropietarioReporteExport;
+use App\Exports\PropietarioReporteDetalladoExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\NotasConsumoExport;
+
 class PropietarioController extends Controller
 {
     public function dashboard()
@@ -27,7 +33,7 @@ class PropietarioController extends Controller
 
         $metricas = $this->getMetricasPropietario($edificios);
         $consumoPorEdificio = $this->getConsumoPorEdificio($edificios);
-        $consumosData = $this->getConsumosData($edificios);
+        $consumosData = $this->getConsumosData1($edificios);
 
         return view('propietario.dashboard', compact(
             'edificios', 
@@ -333,35 +339,35 @@ class PropietarioController extends Controller
     }
 
     // MÉTODOS PARA REPORTES
-    public function reportes(Request $request)
-    {
-        $user = auth()->user();
-        $edificios = Edificio::where('id_propietario', $user->id)->get();
+    // public function reportes(Request $request)
+    // {
+    //     $user = auth()->user();
+    //     $edificios = Edificio::where('id_propietario', $user->id)->get();
         
-        $edificioId = $request->input('edificio_id', null);
-        $year = $request->input('year', now()->year);
+    //     $edificioId = $request->input('edificio_id', null);
+    //     $year = $request->input('year', now()->year);
 
-        // Inicializar variables con valores por defecto
-        $consumoData = [];
-        $alertasData = [];
-        $consumosData = [];
+    //     // Inicializar variables con valores por defecto
+    //     $consumoData = [];
+    //     $alertasData = [];
+    //     $consumosData = [];
 
-        // Solo generar datos si hay un edificio seleccionado
-        if ($edificioId || $request->has('year')) {
-            $consumoData = $this->getReporteConsumo($user->id, $edificioId, $year);
-            $alertasData = $this->getReporteAlertas($user->id, $edificioId, $year);
-            $consumosData = $this->getReporteConsumos($user->id, $edificioId, $year);
-        }
+    //     // Solo generar datos si hay un edificio seleccionado
+    //     if ($edificioId || $request->has('year')) {
+    //         $consumoData = $this->getReporteConsumo($user->id, $edificioId, $year);
+    //         $alertasData = $this->getReporteAlertas($user->id, $edificioId, $year);
+    //         $consumosData = $this->getReporteConsumos($user->id, $edificioId, $year);
+    //     }
 
-        return view('propietario.reportes', compact(
-            'edificios',
-            'consumoData',
-            'alertasData',
-            'consumosData',
-            'year',
-            'edificioId'
-        ));
-    }
+    //     return view('propietario.reportes', compact(
+    //         'edificios',
+    //         'consumoData',
+    //         'alertasData',
+    //         'consumosData',
+    //         'year',
+    //         'edificioId'
+    //     ));
+    // }
 
     private function getReporteConsumo($propietarioId, $edificioId, $year)
     {
@@ -507,7 +513,7 @@ class PropietarioController extends Controller
 
     //     return $data;
     // }
-    private function getConsumosData($edificios)
+    private function getConsumosData1($edificios)
     {
         $currentYear = now()->year;
         $data = [];
@@ -738,5 +744,390 @@ class PropietarioController extends Controller
         ]);
 
         return view('propietario.pagos.detalle', compact('consumo'));
+    }
+    //REPORTES EN PDF Y EXCEL.
+    public function reportes(Request $request)
+    {
+        $user = auth()->user();
+        $edificios = Edificio::where('id_propietario', $user->id)->get();
+        
+        $edificioId = $request->input('edificio_id');
+        $year = $request->input('year', now()->year);
+
+        if ($edificioId || $edificioId === '') {
+            $consumoData = $this->getConsumoData($edificioId, $year);
+            $alertasData = $this->getAlertasData($edificioId, $year);
+            $consumosData = $this->getConsumosData($edificioId, $year);
+
+            return view('propietario.reportes', compact(
+                'edificios', 'edificioId', 'year', 'consumoData', 'alertasData', 'consumosData'
+            ));
+        }
+
+        return view('propietario.reportes', compact('edificios', 'edificioId', 'year'));
+    }
+
+    public function exportarReportePdf(Request $request)
+    {
+        $user = auth()->user();
+        $edificioId = $request->input('edificio_id');
+        $year = $request->input('year', now()->year);
+
+        $edificio = null;
+        if ($edificioId) {
+            $edificio = Edificio::where('id', $edificioId)
+                ->where('id_propietario', $user->id)
+                ->firstOrFail();
+        }
+
+        $consumoData = $this->getConsumoData($edificioId, $year);
+        $alertasData = $this->getAlertasData($edificioId, $year);
+        $consumosData = $this->getConsumosData($edificioId, $year);
+
+        $pdf = Pdf::loadView('propietario.reportes.reporte-pdf', compact(
+            'user', 'edificio', 'year', 'consumoData', 'alertasData', 'consumosData'
+        ));
+
+        $filename = $edificio 
+            ? "reporte-{$edificio->nombre}-{$year}.pdf" 
+            : "reporte-todos-edificios-{$year}.pdf";
+
+        return $pdf->download($filename);
+    }
+
+    public function exportarReporteExcel(Request $request)
+    {
+        $user = auth()->user();
+        $edificioId = $request->input('edificio_id');
+        $year = $request->input('year', now()->year);
+
+        return Excel::download(
+            new PropietarioReporteExport($user, $edificioId, $year), 
+            "reporte-{$year}.xlsx"
+        );
+    }
+
+    public function exportarReporteDetalladoExcel(Request $request)
+    {
+        $user = auth()->user();
+        $edificioId = $request->input('edificio_id');
+        $year = $request->input('year', now()->year);
+
+        return Excel::download(
+            new PropietarioReporteDetalladoExport($user, $edificioId, $year), 
+            "reporte-detallado-{$year}.xlsx"
+        );
+    }
+
+    // Métodos auxiliares para obtener datos
+    private function getConsumoData($edificioId, $year)
+    {
+        $query = ConsumoAgua::join('medidor', 'consumo_agua.id_medidor', '=', 'medidor.id')
+            ->join('departamento', 'medidor.id_departamento', '=', 'departamento.id')
+            ->join('edificio', 'departamento.id_edificio', '=', 'edificio.id')
+            ->where('edificio.id_propietario', auth()->id())
+            ->whereYear('consumo_agua.fecha_hora', $year);
+
+        if ($edificioId) {
+            $query->where('edificio.id', $edificioId);
+        }
+
+        return $query->selectRaw('MONTH(consumo_agua.fecha_hora) as mes, SUM(consumo_agua.volumen) as total')
+            ->groupBy('mes')
+            ->pluck('total', 'mes')
+            ->toArray();
+    }
+
+    private function getAlertasData($edificioId, $year)
+    {
+        $query = Alerta::join('medidor', 'alerta.id_medidor', '=', 'medidor.id')
+            ->join('departamento', 'medidor.id_departamento', '=', 'departamento.id')
+            ->join('edificio', 'departamento.id_edificio', '=', 'edificio.id')
+            ->where('edificio.id_propietario', auth()->id())
+            ->whereYear('alerta.fecha_hora', $year);
+
+        if ($edificioId) {
+            $query->where('edificio.id', $edificioId);
+        }
+
+        return $query->selectRaw('MONTH(alerta.fecha_hora) as mes, COUNT(*) as total')
+            ->groupBy('mes')
+            ->pluck('total', 'mes')
+            ->toArray();
+    }
+    private function getConsumosData($edificioId, $year)
+    {
+        $query = ConsumoEdificio::join('edificio', 'consumo_edificio.id_edificio', '=', 'edificio.id')
+            ->where('edificio.id_propietario', auth()->id())
+            ->whereYear('consumo_edificio.fecha_emision', $year);
+
+        if ($edificioId) {
+            $query->where('edificio.id', $edificioId);
+        }
+
+        return $query->selectRaw('MONTH(consumo_edificio.fecha_emision) as mes, SUM(consumo_edificio.monto_total) as total')
+            ->groupBy('mes')
+            ->pluck('total', 'mes')
+            ->toArray();
+    }
+    // REPORTES DE EDIFICIOS
+    public function reporteNotasConsumo(Request $request, $edificioId)
+    {
+        $user = auth()->user();
+        $edificio = Edificio::where('id', $edificioId)
+            ->where('id_propietario', $user->id)
+            ->firstOrFail();
+
+        $mes = $request->input('mes', now()->format('Y-m'));
+        
+        $notasConsumo = $this->getNotasConsumoPorDepartamento($edificio, $mes);
+
+        return view('propietario.reportes.notas-consumo', compact('edificio', 'notasConsumo', 'mes'));
+    }
+
+    /**
+     * Obtener datos de notas de consumo por departamento
+     */
+    private function getNotasConsumoPorDepartamento($edificio, $mes)
+    {
+        return ConsumoDepartamento::whereHas('consumoEdificio', function($query) use ($edificio, $mes) {
+                $query->where('id_edificio', $edificio->id)
+                    ->where('periodo', $mes);
+            })
+            ->with([
+                'departamento.residentes',
+                'consumoEdificio'
+            ])
+            ->get()
+            ->map(function($consumoDepto) {
+                $residentes = $consumoDepto->departamento->residentes;
+                $residentesNombres = $residentes->pluck('nombre')->implode(', ');
+                
+                return [
+                    'departamento' => $consumoDepto->departamento->numero_departamento,
+                    'residentes' => $residentesNombres,
+                    'cantidad_residentes' => $residentes->count(),
+                    'consumo_m3' => $consumoDepto->consumo_m3,
+                    'porcentaje_consumo' => $consumoDepto->porcentaje_consumo,
+                    'monto_asignado' => $consumoDepto->monto_asignado,
+                    'estado' => $consumoDepto->estado,
+                    'fecha_emision' => $consumoDepto->consumoEdificio->fecha_emision,
+                    'fecha_vencimiento' => $consumoDepto->consumoEdificio->fecha_vencimiento,
+                    'periodo' => $consumoDepto->consumoEdificio->periodo
+                ];
+            })
+            ->sortBy('departamento')
+            ->values()
+            ->toArray();
+    }
+    public function exportarNotasConsumoPdf(Request $request, $edificioId)
+    {
+        $user = auth()->user();
+        $edificio = Edificio::where('id', $edificioId)
+            ->where('id_propietario', $user->id)
+            ->firstOrFail();
+
+        $mes = $request->input('mes', now()->format('Y-m'));
+        
+        $notasConsumo = $this->getNotasConsumoPorDepartamento($edificio, $mes);
+
+        $pdf = Pdf::loadView('propietario.reportes.notas-consumo-pdf', compact(
+            'edificio', 'notasConsumo', 'mes'
+        ));
+
+        $filename = "notas-consumo-{$edificio->nombre}-{$mes}.pdf";
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Exportar reporte a Excel
+     */
+    public function exportarNotasConsumoExcel(Request $request, $edificioId)
+    {
+        $user = auth()->user();
+        $edificio = Edificio::where('id', $edificioId)
+            ->where('id_propietario', $user->id)
+            ->firstOrFail();
+
+        $mes = $request->input('mes', now()->format('Y-m'));
+        
+        $notasConsumo = $this->getNotasConsumoPorDepartamento($edificio, $mes);
+
+        return Excel::download(
+            new NotasConsumoExport($edificio, $notasConsumo, $mes),
+            "notas-consumo-{$edificio->nombre}-{$mes}.xlsx"
+        );
+    }
+    // Agrega estos métodos en tu PropietarioController
+
+    /**
+     * Reporte de todas las notas de consumo
+     */
+    public function reporteTodasNotasConsumo(Request $request)
+    {
+        $user = auth()->user();
+        $edificios = Edificio::where('id_propietario', $user->id)->get();
+        
+        $edificioId = $request->input('edificio_id');
+        $estado = $request->input('estado');
+        $fechaInicio = $request->input('fecha_inicio');
+        $fechaFin = $request->input('fecha_fin');
+
+        // Obtener todas las notas de consumo con filtros
+        $notasConsumo = $this->getTodasNotasConsumo($user->id, $edificioId, $estado, $fechaInicio, $fechaFin);
+
+        $estadisticas = $this->calcularEstadisticasNotas($notasConsumo);
+
+        return view('propietario.reportes.todas-notas-consumo', compact(
+            'edificios',
+            'notasConsumo',
+            'estadisticas',
+            'edificioId',
+            'estado',
+            'fechaInicio',
+            'fechaFin'
+        ));
+    }
+
+    /**
+     * Exportar reporte completo a PDF
+     */
+    public function exportarTodasNotasConsumoPdf(Request $request)
+    {
+        $user = auth()->user();
+        
+        $edificioId = $request->input('edificio_id');
+        $estado = $request->input('estado');
+        $fechaInicio = $request->input('fecha_inicio');
+        $fechaFin = $request->input('fecha_fin');
+
+        $edificio = null;
+        if ($edificioId) {
+            $edificio = Edificio::where('id', $edificioId)
+                ->where('id_propietario', $user->id)
+                ->first();
+        }
+
+        $notasConsumo = $this->getTodasNotasConsumo($user->id, $edificioId, $estado, $fechaInicio, $fechaFin);
+        $estadisticas = $this->calcularEstadisticasNotas($notasConsumo);
+
+        $pdf = Pdf::loadView('propietario.reportes.todas-notas-consumo-pdf', compact(
+            'user', 'edificio', 'notasConsumo', 'estadisticas', 'fechaInicio', 'fechaFin', 'estado'
+        ));
+
+        $filename = $edificio 
+            ? "reporte-notas-consumo-{$edificio->nombre}.pdf" 
+            : "reporte-todas-notas-consumo.pdf";
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Exportar reporte completo a Excel
+     */
+    public function exportarTodasNotasConsumoExcel(Request $request)
+    {
+        $user = auth()->user();
+        
+        $edificioId = $request->input('edificio_id');
+        $estado = $request->input('estado');
+        $fechaInicio = $request->input('fecha_inicio');
+        $fechaFin = $request->input('fecha_fin');
+
+        $notasConsumo = $this->getTodasNotasConsumo($user->id, $edificioId, $estado, $fechaInicio, $fechaFin);
+
+        return Excel::download(
+            new TodasNotasConsumoExport($user, $notasConsumo, $edificioId, $estado, $fechaInicio, $fechaFin),
+            "reporte-todas-notas-consumo.xlsx"
+        );
+    }
+
+    /**
+     * Obtener todas las notas de consumo con filtros
+     */
+    private function getTodasNotasConsumo($propietarioId, $edificioId = null, $estado = null, $fechaInicio = null, $fechaFin = null)
+    {
+        $query = ConsumoDepartamento::whereHas('consumoEdificio.edificio', function($query) use ($propietarioId) {
+                $query->where('id_propietario', $propietarioId);
+            })
+            ->with([
+                'consumoEdificio.edificio',
+                'departamento.residentes'
+            ]);
+
+        // Aplicar filtros
+        if ($edificioId) {
+            $query->whereHas('consumoEdificio', function($query) use ($edificioId) {
+                $query->where('id_edificio', $edificioId);
+            });
+        }
+
+        if ($estado) {
+            $query->where('estado', $estado);
+        }
+
+        if ($fechaInicio) {
+            $query->whereHas('consumoEdificio', function($query) use ($fechaInicio) {
+                $query->whereDate('fecha_emision', '>=', $fechaInicio);
+            });
+        }
+
+        if ($fechaFin) {
+            $query->whereHas('consumoEdificio', function($query) use ($fechaFin) {
+                $query->whereDate('fecha_emision', '<=', $fechaFin);
+            });
+        }
+
+        return $query->get()
+            ->map(function($consumoDepto) {
+                $residentes = $consumoDepto->departamento->residentes;
+                $residentesNombres = $residentes->pluck('nombre')->implode(', ');
+
+                return [
+                    'id' => $consumoDepto->id,
+                    'edificio' => $consumoDepto->consumoEdificio->edificio->nombre,
+                    'departamento' => $consumoDepto->departamento->numero_departamento,
+                    'residentes' => $residentesNombres,
+                    'cantidad_residentes' => $residentes->count(),
+                    'consumo_m3' => $consumoDepto->consumo_m3,
+                    'porcentaje_consumo' => $consumoDepto->porcentaje_consumo,
+                    'monto_asignado' => $consumoDepto->monto_asignado,
+                    'estado' => $consumoDepto->estado,
+                    'fecha_emision' => $consumoDepto->consumoEdificio->fecha_emision,
+                    'fecha_vencimiento' => $consumoDepto->consumoEdificio->fecha_vencimiento,
+                    'fecha_pago' => $consumoDepto->fecha_pago,
+                    'periodo' => $consumoDepto->consumoEdificio->periodo,
+                    'consumo_edificio_id' => $consumoDepto->consumoEdificio->id
+                ];
+            })
+            ->sortBy(['edificio', 'departamento'])
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Calcular estadísticas de las notas de consumo
+     */
+    private function calcularEstadisticasNotas($notasConsumo)
+    {
+        $total = count($notasConsumo);
+        $totalMonto = collect($notasConsumo)->sum('monto_asignado');
+        $totalConsumo = collect($notasConsumo)->sum('consumo_m3');
+        
+        $estados = collect($notasConsumo)->groupBy('estado')->map->count();
+        
+        $montoPorEstado = collect($notasConsumo)->groupBy('estado')->map(function($items) {
+            return collect($items)->sum('monto_asignado');
+        });
+
+        return [
+            'total_notas' => $total,
+            'total_monto' => $totalMonto,
+            'total_consumo' => $totalConsumo,
+            'estados' => $estados,
+            'monto_por_estado' => $montoPorEstado,
+            'promedio_monto' => $total > 0 ? $totalMonto / $total : 0
+        ];
     }
 }

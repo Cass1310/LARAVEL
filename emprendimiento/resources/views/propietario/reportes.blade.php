@@ -261,12 +261,27 @@
             <!-- Botones de Exportación -->
             <div class="card">
                 <div class="card-body text-center">
-                    <button class="btn btn-outline-primary me-2" onclick="exportToPDF()">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Exportar a PDF
-                    </button>
-                    <button class="btn btn-outline-success me-2" onclick="exportToExcel()">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Exportar a Excel
-                    </button>
+                    <form method="GET" action="{{ route('propietario.reportes.exportar-pdf') }}" class="d-inline">
+                        <input type="hidden" name="edificio_id" value="{{ $edificioId }}">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <button type="submit" class="btn btn-outline-danger me-2">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Exportar a PDF
+                        </button>
+                    </form>
+                    <form method="GET" action="{{ route('propietario.reportes.exportar-excel') }}" class="d-inline">
+                        <input type="hidden" name="edificio_id" value="{{ $edificioId }}">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <button type="submit" class="btn btn-outline-success me-2">
+                            <i class="bi bi-file-earmark-excel me-1"></i>Exportar a Excel
+                        </button>
+                    </form>
+                    <form method="GET" action="{{ route('propietario.reportes.exportar-detallado-excel') }}" class="d-inline">
+                        <input type="hidden" name="edificio_id" value="{{ $edificioId }}">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <button type="submit" class="btn btn-outline-info me-2">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel Detallado
+                        </button>
+                    </form>
                     <button class="btn btn-outline-secondary" onclick="window.print()">
                         <i class="bi bi-printer me-1"></i>Imprimir Reporte
                     </button>
@@ -440,18 +455,6 @@
                 }
             });
         });
-
-        function exportToPDF() {
-            // Simular exportación a PDF
-            alert('Exportando a PDF...');
-            // Aquí integrarías una librería como jsPDF o hacer una llamada al backend
-        }
-
-        function exportToExcel() {
-            // Simular exportación a Excel
-            alert('Exportando a Excel...');
-            // Aquí integrarías una librería como SheetJS o hacer una llamada al backend
-        }
     </script>
     @endpush
     @endif

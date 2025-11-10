@@ -48,34 +48,6 @@
                                 <label class="form-label">Dirección</label>
                                 <input type="text" class="form-control" name="direccion">
                             </div>
-
-                            <!-- Campos específicos para residentes -->
-                            <div id="residenteFields" style="display: none;">
-                                <div class="col-md-6">
-                                    <label class="form-label">Departamento *</label>
-                                    <select class="form-select" name="id_departamento">
-                                        <option value="">Seleccionar departamento</option>
-                                        @foreach($edificios as $edificio)
-                                            <optgroup label="{{ $edificio->nombre }}">
-                                                @foreach($edificio->departamentos as $departamento)
-                                                    <option value="{{ $departamento->id }}">
-                                                        {{ $departamento->numero_departamento }} - Piso {{ $departamento->piso }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Fecha Inicio *</label>
-                                    <input type="date" class="form-control" name="fecha_inicio">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Fecha Fin</label>
-                                    <input type="date" class="form-control" name="fecha_fin">
-                                </div>
-                            </div>
-
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
                                     <i class="bi bi-check-circle me-1"></i>Crear Usuario
@@ -98,15 +70,6 @@
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
             }
-
-            document.getElementById('rolSelect').addEventListener('change', function() {
-                const residenteFields = document.getElementById('residenteFields');
-                if (this.value === 'residente') {
-                    residenteFields.style.display = 'block';
-                } else {
-                    residenteFields.style.display = 'none';
-                }
-            });
         </script>
     @endpush
 </x-app-layout>

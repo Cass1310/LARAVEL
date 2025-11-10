@@ -137,12 +137,9 @@ class AdminController extends Controller
             'password' => 'required|min:8',
             'rol' => 'required|in:propietario,residente',
             'telefono' => 'nullable|string|max:20',
-            'direccion' => 'nullable|string|max:255',
-            'id_departamento' => 'required_if:rol,residente|exists:departamento,id',
-            'fecha_inicio' => 'required_if:rol,residente|date',
-            'fecha_fin' => 'nullable|date|after:fecha_inicio',
+            'direccion' => 'nullable|string|max:255'
         ]);
-
+        
         // Crear usuario
         $usuario = User::create([
             'nombre' => $validated['nombre'],
@@ -153,23 +150,14 @@ class AdminController extends Controller
             'direccion' => $validated['direccion'],
             'created_by' => auth()->id(),
         ]);
-
-        // Si es residente, asignar al departamento
-        if ($validated['rol'] === 'residente' && isset($validated['id_departamento'])) {
-            $usuario->departamentosResidente()->attach($validated['id_departamento'], [
-                'fecha_inicio' => $validated['fecha_inicio'],
-                'fecha_fin' => $validated['fecha_fin']
-            ]);
-        }
-
         // Si es propietario, crear cliente automáticamente
         if ($validated['rol'] === 'propietario') {
             Cliente::create([
                 'id' => $usuario->id,
+                'nit_opcional'=>'NIT000',
                 'razon_social' => $validated['nombre']
             ]);
         }
-
         return redirect()->route('admin.usuarios')->with('success', 'Usuario creado exitosamente');
     }
     public function editarUsuario(User $user)

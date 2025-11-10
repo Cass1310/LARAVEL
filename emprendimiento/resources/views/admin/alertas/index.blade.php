@@ -45,7 +45,22 @@
                             <input type="date" class="form-control" onchange="filtrarAlertas()" id="filtroFechaDesde">
                         </div>
                     </div>
-
+                    <!-- Agregar botones de exportación -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary" onclick="filtrarAlertas()">
+                                    <i class="bi bi-funnel me-1"></i>Filtrar
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" onclick="exportarPDF()">
+                                    <i class="bi bi-file-pdf me-1"></i>Exportar PDF
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="exportarExcel()">
+                                    <i class="bi bi-file-excel me-1"></i>Exportar Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-striped" id="tablaAlertas">
                             <thead>
@@ -141,6 +156,35 @@
                     
                     fila.style.display = mostrar ? '' : 'none';
                 });
+            }
+            function exportarPDF() {
+                const tipo = document.getElementById('filtroTipo').value;
+                const estado = document.getElementById('filtroEstado').value;
+                const edificio = document.getElementById('filtroEdificio').value;
+                const fechaDesde = document.getElementById('filtroFechaDesde').value;
+                
+                const params = new URLSearchParams();
+                if (tipo) params.append('tipo', tipo);
+                if (estado) params.append('estado', estado);
+                if (edificio) params.append('edificio', edificio);
+                if (fechaDesde) params.append('fecha_desde', fechaDesde);
+                
+                window.open('{{ route("admin.alertas.exportar-pdf") }}?' + params.toString(), '_blank');
+            }
+
+            function exportarExcel() {
+                const tipo = document.getElementById('filtroTipo').value;
+                const estado = document.getElementById('filtroEstado').value;
+                const edificio = document.getElementById('filtroEdificio').value;
+                const fechaDesde = document.getElementById('filtroFechaDesde').value;
+                
+                const params = new URLSearchParams();
+                if (tipo) params.append('tipo', tipo);
+                if (estado) params.append('estado', estado);
+                if (edificio) params.append('edificio', edificio);
+                if (fechaDesde) params.append('fecha_desde', fechaDesde);
+                
+                window.location.href = '{{ route("admin.alertas.exportar-excel") }}?' + params.toString();
             }
         </script>
     @endpush

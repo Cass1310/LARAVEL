@@ -45,7 +45,14 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="btn-group">
+                        <a href="{{ route('admin.medidores.exportar-pdf') }}" class="btn btn-outline-danger">
+                            <i class="bi bi-file-pdf me-1"></i>PDF
+                        </a>
+                        <a href="{{ route('admin.medidores.exportar-excel') }}" class="btn btn-outline-success">
+                            <i class="bi bi-file-excel me-1"></i>Excel
+                        </a>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-striped" id="tablaMedidores">
                             <thead>

@@ -18,7 +18,13 @@ use App\Models\ConsumoAgua;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
-
+use App\Exports\AlertasExport;
+use App\Exports\AlertasPdfExport;
+use App\Exports\MantenimientosExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\MedidoresExport;
+use App\Exports\GatewaysExport;
 class AdminController extends Controller
 {
     public function dashboard()
@@ -613,5 +619,96 @@ class AdminController extends Controller
         $residentesDisponibles = $this->getResidentesDisponibles();
         
         return view('admin.propietarios.show', compact('user', 'edificios', 'residentesDisponibles'));
+    }
+    public function exportarAlertasPdf(Request $request)
+    {
+        $filtros = $request->only(['tipo', 'estado', 'edificio', 'fecha_desde']);
+        
+        $alertas = Alerta::with(['medidor.departamento.edificio'])
+            ->when($filtros['tipo'] ?? null, function($query, $tipo) {
+                return $query->where('tipo_alerta', $tipo);
+            })
+            ->when($filtros['estado'] ?? null, function($query, $estado) {
+                return $query->where('estado', $estado);
+            })
+            ->when($filtros['edificio'] ?? null, function($query, $edificio) {
+                return $query->whereHas('medidor.departamento.edificio', function($q) use ($edificio) {
+                    $q->where('nombre', $edificio);
+                });
+            })
+            ->when($filtros['fecha_desde'] ?? null, function($query, $fecha) {
+                return $query->where('fecha_hora', '>=', $fecha);
+            })
+            ->orderBy('fecha_hora', 'desc')
+            ->get();
+
+        $pdf = PDF::loadView('admin.alertas.export-pdf', compact('alertas', 'filtros'));
+        return $pdf->download('reporte-alertas-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function exportarAlertasExcel(Request $request)
+    {
+        $filtros = $request->only(['tipo', 'estado', 'edificio', 'fecha_desde']);
+        return Excel::download(new AlertasExport($filtros), 'reporte-alertas-' . now()->format('Y-m-d') . '.xlsx');
+    }
+    public function exportarMantenimientosPdf(Request $request)
+    {
+        $filtros = $request->only(['tipo', 'cobertura', 'estado', 'edificio']);
+        
+        $mantenimientos = Mantenimiento::with(['medidor.departamento.edificio'])
+            ->when($filtros['tipo'] ?? null, function($query, $tipo) {
+                return $query->where('tipo', $tipo);
+            })
+            ->when($filtros['cobertura'] ?? null, function($query, $cobertura) {
+                return $query->where('cobertura', $cobertura);
+            })
+            ->when($filtros['estado'] ?? null, function($query, $estado) {
+                return $query->where('estado', $estado);
+            })
+            ->when($filtros['edificio'] ?? null, function($query, $edificio) {
+                return $query->whereHas('medidor.departamento.edificio', function($q) use ($edificio) {
+                    $q->where('nombre', $edificio);
+                });
+            })
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        $pdf = PDF::loadView('admin.mantenimientos.export-pdf', compact('mantenimientos', 'filtros'));
+        return $pdf->download('reporte-mantenimientos-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function exportarMantenimientosExcel(Request $request)
+    {
+        $filtros = $request->only(['tipo', 'cobertura', 'estado', 'edificio']);
+        return Excel::download(new MantenimientosExport($filtros), 'reporte-mantenimientos-' . now()->format('Y-m-d') . '.xlsx');
+    }
+    public function exportarMedidoresPdf()
+    {
+        $medidores = Medidor::with(['departamento.edificio', 'gateway'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pdf = PDF::loadView('admin.equipos.medidores-export-pdf', compact('medidores'));
+        return $pdf->download('reporte-medidores-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function exportarMedidoresExcel()
+    {
+        return Excel::download(new MedidoresExport(), 'reporte-medidores-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportarGatewaysPdf()
+    {
+        $gateways = Gateway::withCount('medidores')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pdf = PDF::loadView('admin.equipos.gateways-export-pdf', compact('gateways'));
+        return $pdf->download('reporte-gateways-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function exportarGatewaysExcel()
+    {
+        return Excel::download(new GatewaysExport(), 'reporte-gateways-' . now()->format('Y-m-d') . '.xlsx');
     }
 }

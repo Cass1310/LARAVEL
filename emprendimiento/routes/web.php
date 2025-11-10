@@ -192,5 +192,20 @@ Route::middleware(['auth', 'verified', 'role:administrador'])
         Route::post('/suscripciones/{suscripcion}/pagos', [AdminController::class, 'registrarPagoSuscripcion'])->name('suscripciones.pagos.registrar');
 
         Route::get('/reportes', [AdminController::class, 'reportes'])->name('reportes');
+        // Alertas
+        Route::get('/alertas/exportar-pdf', [AdminController::class, 'exportarAlertasPdf'])->name('alertas.exportar-pdf');
+        Route::get('/alertas/exportar-excel', [AdminController::class, 'exportarAlertasExcel'])->name('alertas.exportar-excel');
+
+        // Mantenimientos
+        Route::get('/mantenimientos/exportar-pdf', [AdminController::class, 'exportarMantenimientosPdf'])->name('mantenimientos.exportar-pdf');
+        Route::get('/mantenimientos/exportar-excel', [AdminController::class, 'exportarMantenimientosExcel'])->name('mantenimientos.exportar-excel');
+
+        // Medidores
+        Route::get('/medidores/exportar-pdf', [AdminController::class, 'exportarMedidoresPdf'])->name('medidores.exportar-pdf');
+        Route::get('/medidores/exportar-excel', [AdminController::class, 'exportarMedidoresExcel'])->name('medidores.exportar-excel');
+
+        // Gateways
+        Route::get('/gateways/exportar-pdf', [AdminController::class, 'exportarGatewaysPdf'])->name('gateways.exportar-pdf');
+        Route::get('/gateways/exportar-excel', [AdminController::class, 'exportarGatewaysExcel'])->name('gateways.exportar-excel');
     });
 require __DIR__.'/auth.php';

@@ -20,6 +20,7 @@ use App\Exports\PropietarioReporteDetalladoExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\NotasConsumoExport;
+use App\Exports\TodasNotasConsumoExport;
 
 class PropietarioController extends Controller
 {

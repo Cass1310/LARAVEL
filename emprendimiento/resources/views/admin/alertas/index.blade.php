@@ -96,6 +96,11 @@
                                                 @case('consumo_excesivo')
                                                     <span class="badge bg-info">Consumo Excesivo</span>
                                                     @break
+                                                @case('fuga_nocturna')
+                                                    <span class="badge bg-secondary">Fuga Nocturna</span>
+                                                    @break
+                                                @default
+                                                    <span class="badge bg-secondary">Desconocido</span>
                                             @endswitch
                                         </td>
                                         <td>{{ number_format($alerta->valor_detectado, 2) }} m³</td>

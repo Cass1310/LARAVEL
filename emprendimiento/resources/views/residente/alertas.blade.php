@@ -91,7 +91,7 @@
                                                             <span class="badge bg-info">Consumo Excesivo</span>
                                                             @break
                                                         @case('fuga_nocturna')
-                                                            <span class="badge bg-danger">Fuga Nocturna</span>
+                                                            <span class="badge bg-secondary">Fuga Nocturna</span>
                                                             @break
                                                     @endswitch
                                                 </td>

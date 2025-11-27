@@ -21,6 +21,7 @@
                                 <option value="fuga">Fuga</option>
                                 <option value="consumo_brusco">Consumo Brusco</option>
                                 <option value="consumo_excesivo">Consumo Excesivo</option>
+                                <option value="fuga_nocturna">Fuga Nocturna</option>
                             </select>
                         </div>
                         <div class="col-md-3">

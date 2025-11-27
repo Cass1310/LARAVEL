@@ -150,7 +150,8 @@ class PropietarioAlertasSheet implements FromCollection, WithHeadings, WithTitle
         $tipos = [
             'fuga' => 'Fuga de Agua',
             'consumo_brusco' => 'Consumo Brusco',
-            'consumo_excesivo' => 'Consumo Excesivo'
+            'consumo_excesivo' => 'Consumo Excesivo',
+            'fuga_nocturna' => 'Fuga Nocturna',
         ];
 
         return $tipos[$tipo] ?? $tipo;

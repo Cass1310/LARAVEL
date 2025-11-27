@@ -71,6 +71,7 @@ class AlertasExport implements FromCollection, WithHeadings, WithMapping, WithSt
             'fuga' => 'Fuga',
             'consumo_brusco' => 'Consumo Brusco',
             'consumo_excesivo' => 'Consumo Excesivo',
+            'fuga_nocturna' => 'Fuga Nocturna',
             default => $tipo
         };
     }

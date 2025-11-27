@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('alerta', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_medidor')->constrained('medidor');
-            $table->enum('tipo_alerta', ['fuga', 'consumo_brusco', 'consumo_excesivo']);
+            $table->enum('tipo_alerta', ['fuga', 'consumo_brusco', 'consumo_excesivo','fuga_nocturna']);
             $table->decimal('valor_detectado', 10, 2)->nullable();
             $table->dateTime('fecha_hora');
             $table->enum('estado', ['pendiente', 'atendida', 'resuelta'])->default('pendiente');

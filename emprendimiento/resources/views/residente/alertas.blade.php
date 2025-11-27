@@ -29,6 +29,7 @@
                                     <option value="fuga" {{ request('tipo') == 'fuga' ? 'selected' : '' }}>Fuga</option>
                                     <option value="consumo_brusco" {{ request('tipo') == 'consumo_brusco' ? 'selected' : '' }}>Consumo Brusco</option>
                                     <option value="consumo_excesivo" {{ request('tipo') == 'consumo_excesivo' ? 'selected' : '' }}>Consumo Excesivo</option>
+                                    <option value="fuga_nocturna" {{ request('tipo') == 'fuga_nocturna' ? 'selected' : '' }}>Fuga Nocturna</option>
                                 </select>
                             </div>
 
@@ -88,6 +89,9 @@
                                                             @break
                                                         @case('consumo_excesivo')
                                                             <span class="badge bg-info">Consumo Excesivo</span>
+                                                            @break
+                                                        @case('fuga_nocturna')
+                                                            <span class="badge bg-danger">Fuga Nocturna</span>
                                                             @break
                                                     @endswitch
                                                 </td>

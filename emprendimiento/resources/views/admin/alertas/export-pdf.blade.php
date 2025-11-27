@@ -59,6 +59,7 @@
                         @case('fuga')<span class="badge badge-danger">Fuga</span>@break
                         @case('consumo_brusco')<span class="badge badge-warning">Consumo Brusco</span>@break
                         @case('consumo_excesivo')<span class="badge badge-info">Consumo Excesivo</span>@break
+                        @case('fuga_nocturna')<span class="badge badge-danger">Fuga Nocturna</span>@break
                     @endswitch
                 </td>
                 <td>{{ number_format($alerta->valor_detectado, 2) }}</td>

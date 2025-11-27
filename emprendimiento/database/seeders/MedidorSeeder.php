@@ -22,7 +22,7 @@ class MedidorSeeder extends Seeder
         foreach ($departamentos as $departamento) {
             $medidores[] = [
                 'codigo_lorawan' => 'LW-' . str_pad($counter, 4, '0', STR_PAD_LEFT),
-                'device_eui' => 'A81758FFFE0' . str_pad($counter, 5, '0', STR_PAD_LEFT), // EUI simulado
+                'device_eui' => $this->generateDeviceEUI($counter),
                 'dev_id' => 'medidor_' . $counter,
                 'id_departamento' => $departamento->id,
                 'id_gateway' => $gateway->id,
@@ -36,5 +36,13 @@ class MedidorSeeder extends Seeder
         foreach ($medidores as $medidor) {
             Medidor::create($medidor);
         }
+    }
+
+    private function generateDeviceEUI($counter): string
+    {
+        // Generar un Device EUI realista (16 caracteres hexadecimales)
+        $base = 'A81758FFFE0'; // Parte fija común en dispositivos LoRa
+        $suffix = str_pad(dechex($counter), 5, '0', STR_PAD_LEFT);
+        return $base . $suffix;
     }
 }

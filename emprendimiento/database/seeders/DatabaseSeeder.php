@@ -25,6 +25,9 @@ class DatabaseSeeder extends Seeder
             ConsumoAguaSeeder::class,
             AlertaSeeder::class,
             MantenimientoSeeder::class,
+            ConsumoEdificioSeeder::class,
+            ConsumoDepartamentoSeeder::class,
+            SuscripcionPagoSeeder::class,
         ]);
     }
 }

@@ -12,10 +12,9 @@ class ConsumoAguaSeeder extends Seeder
 {
     public function run(): void
     {
-        // Configuración
-        $fechaInicio = Carbon::create(2025, 10, 1, 0, 0, 0);
-        $fechaFin = Carbon::create(2025, 11, 26, 23, 45, 0);
-        $intervaloMinutos = 15; // Cada 15 minutos como el manual sugiere
+        $fechaInicio = Carbon::create(2025, 11, 1, 0, 0, 0);
+        $fechaFin = Carbon::create(2025, 11, 27, 15, 10, 0);
+        $intervaloMinutos = 15;
 
         $medidores = Medidor::all();
 

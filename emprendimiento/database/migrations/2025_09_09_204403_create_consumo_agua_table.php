@@ -31,11 +31,21 @@ return new class extends Migration
             $table->index('fecha_hora');
         });
 
-        // Crear los triggers
+        // Crear los triggers SIN DELIMITER
+        $this->createTriggers();
+    }
+
+    public function down(): void
+    {
+        $this->dropTriggers();
+        Schema::dropIfExists('consumo_agua');
+    }
+
+    private function createTriggers(): void
+    {
+        // Trigger 1: Calcular consumo_intervalo_m3 automáticamente
         DB::unprepared("
-            -- Trigger 1: Calcular consumo_intervalo_m3 automáticamente
             DROP TRIGGER IF EXISTS before_insert_calcular_consumo;
-            DELIMITER $$
             CREATE TRIGGER before_insert_calcular_consumo
             BEFORE INSERT ON consumo_agua
             FOR EACH ROW
@@ -60,19 +70,19 @@ return new class extends Migration
                     -- Primera lectura del medidor
                     SET NEW.consumo_intervalo_m3 = 0;
                 END IF;
-            END$$
-            DELIMITER ;
+            END
+        ");
 
-            -- Trigger 2: Detección de consumo brusco
+        // Trigger 2: Detección de consumo brusco
+        DB::unprepared("
             DROP TRIGGER IF EXISTS after_insert_alerta_consumo_brusco;
-            DELIMITER $$
             CREATE TRIGGER after_insert_alerta_consumo_brusco
             AFTER INSERT ON consumo_agua
             FOR EACH ROW
             BEGIN
                 DECLARE avg_consumo DECIMAL(10,4);
                 DECLARE total_lecturas INT;
-                DECLARE umbral_brusco DECIMAL(10,4) DEFAULT 0.050; -- 50 litros
+                DECLARE umbral_brusco DECIMAL(10,4) DEFAULT 0.050;
                 
                 -- Calcular promedio de las últimas 24 horas (excluyendo la actual)
                 SELECT COALESCE(AVG(consumo_intervalo_m3), 0), COUNT(*)
@@ -82,7 +92,7 @@ return new class extends Migration
                   AND fecha_hora >= DATE_SUB(NEW.fecha_hora, INTERVAL 24 HOUR)
                   AND fecha_hora < NEW.fecha_hora;
                 
-                -- Solo generar alerta si hay suficientes lecturas previas y el consumo es significativo
+                -- Solo generar alerta si hay suficientes lecturas previas
                 IF total_lecturas >= 10 AND NEW.consumo_intervalo_m3 > umbral_brusco THEN
                     -- Consumo brusco: más del triple del promedio O más de 200 litros
                     IF NEW.consumo_intervalo_m3 > (avg_consumo * 3) OR NEW.consumo_intervalo_m3 > 0.200 THEN
@@ -99,12 +109,12 @@ return new class extends Migration
                         END IF;
                     END IF;
                 END IF;
-            END$$
-            DELIMITER ;
+            END
+        ");
 
-            -- Trigger 3: Detección de fugas (basado en flow constante)
+        // Trigger 3: Detección de fugas (basado en flow constante)
+        DB::unprepared("
             DROP TRIGGER IF EXISTS after_insert_alerta_fuga;
-            DELIMITER $$
             CREATE TRIGGER after_insert_alerta_fuga
             AFTER INSERT ON consumo_agua
             FOR EACH ROW
@@ -118,7 +128,7 @@ return new class extends Migration
                 FROM consumo_agua
                 WHERE id_medidor = NEW.id_medidor
                   AND fecha_hora >= DATE_SUB(NEW.fecha_hora, INTERVAL 4 HOUR)
-                  AND flow_l_min BETWEEN 0.5 AND 5.0; -- Flow constante típico de fuga
+                  AND flow_l_min BETWEEN 0.5 AND 5.0;
                 
                 -- Si hay 16 lecturas continuas (4 horas) con flow constante
                 IF lecturas_continuas >= 16 AND avg_flow BETWEEN 0.8 AND 3.0 THEN
@@ -134,20 +144,14 @@ return new class extends Migration
                         VALUES (NEW.id_medidor, 'fuga', avg_flow, NEW.fecha_hora, 'pendiente', NOW(), NOW());
                     END IF;
                 END IF;
-            END$$
-            DELIMITER ;
+            END
         ");
     }
 
-    public function down(): void
+    private function dropTriggers(): void
     {
-        // Eliminar los triggers antes de eliminar la tabla
-        DB::unprepared("
-            DROP TRIGGER IF EXISTS before_insert_calcular_consumo;
-            DROP TRIGGER IF EXISTS after_insert_alerta_consumo_brusco;
-            DROP TRIGGER IF EXISTS after_insert_alerta_fuga;
-        ");
-
-        Schema::dropIfExists('consumo_agua');
+        DB::unprepared('DROP TRIGGER IF EXISTS before_insert_calcular_consumo');
+        DB::unprepared('DROP TRIGGER IF EXISTS after_insert_alerta_consumo_brusco');
+        DB::unprepared('DROP TRIGGER IF EXISTS after_insert_alerta_fuga');
     }
 };

@@ -12,6 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('codigo_lorawan', 100)->unique();
             
+            // Campos para identificación LoRaWAN - SIN after()
+            $table->string('device_eui', 64)->nullable()->unique();
+            $table->string('dev_id', 64)->nullable();
+            
             $table->foreignId('id_departamento')->constrained('departamento');
             $table->foreignId('id_gateway')->constrained('gateway');
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');

@@ -18,7 +18,7 @@ class ConsumoEdificioSeeder extends Seeder
             ConsumoEdificio::create([
                 'id_edificio' => $edificio->id,
                 'periodo' => '2025-11',
-                'monto_total' => rand(1000, 5000),
+                'monto_total' => rand(100, 500),
                 'fecha_emision' => '2025-11-01',
                 'fecha_vencimiento' => '2025-12-01',
                 'estado' => 'pendiente',

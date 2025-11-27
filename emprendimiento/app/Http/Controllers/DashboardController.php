@@ -61,7 +61,7 @@ class DashboardController extends Controller
             return $medidor->consumos()
                 ->whereYear('fecha_hora', substr($currentMonth, 0, 4))
                 ->whereMonth('fecha_hora', substr($currentMonth, 5, 2))
-                ->sum('volumen');
+                ->sum('consumo_intervalo_m3');
         });
 
         // Obtener consumo total del edificio
@@ -70,7 +70,7 @@ class DashboardController extends Controller
                 return $medidor->consumos()
                     ->whereYear('fecha_hora', substr($currentMonth, 0, 4))
                     ->whereMonth('fecha_hora', substr($currentMonth, 5, 2))
-                    ->sum('volumen');
+                    ->sum('consumo_intervalo_m3');
             });
         });
 
@@ -109,7 +109,7 @@ class DashboardController extends Controller
             'consumo_mes_actual' => $departamento->medidores->sum(function($medidor) {
                 return $medidor->consumos()
                     ->whereMonth('fecha_hora', now()->month)
-                    ->sum('volumen');
+                    ->sum('consumo_intervalo_m3');
             })
         ];
     }

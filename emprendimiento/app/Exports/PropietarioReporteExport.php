@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Illuminate\Support\Facades\DB;
 
 class PropietarioReporteExport implements FromCollection, WithHeadings, WithTitle, WithStyles
 {
@@ -66,7 +67,8 @@ class PropietarioReporteExport implements FromCollection, WithHeadings, WithTitl
             $query->where('edificio.id', $this->edificioId);
         }
 
-        return $query->sum('consumo_agua.volumen');
+        // CAMBIO: usar consumo_intervalo_m3 en lugar de volumen
+        return $query->sum('consumo_agua.consumo_intervalo_m3');
     }
 
     private function getAlertasMes($mes)

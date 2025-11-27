@@ -64,7 +64,7 @@ class PropietarioEdificiosSheet implements FromCollection, WithHeadings, WithTit
                 return $departamento->medidores->sum(function($medidor) {
                     return $medidor->consumos()
                         ->whereYear('fecha_hora', $this->year)
-                        ->sum('volumen');
+                        ->sum('consumo_intervalo_m3');
                 });
             });
 

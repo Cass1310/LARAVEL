@@ -77,7 +77,7 @@ class AdminController extends Controller
         foreach ($edificios as $edificio) {
             $consumoTotal = $edificio->departamentos->sum(function($departamento) {
                 return $departamento->medidores->sum(function($medidor) {
-                    return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('volumen');
+                    return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('consumo_intervalo_m3');
                 });
             });
 
@@ -431,7 +431,7 @@ class AdminController extends Controller
 
         foreach ($departamentos as $departamento) {
             $consumoTotal = $departamento->medidores->sum(function($medidor) {
-                return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('volumen');
+                return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('consumo_intervalo_m3');
             });
 
             $data[] = [

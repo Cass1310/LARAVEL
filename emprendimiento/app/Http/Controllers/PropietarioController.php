@@ -382,7 +382,7 @@ class PropietarioController extends Controller
             });
         }
 
-        $resultados = $query->selectRaw('MONTH(fecha_hora) as mes, SUM(volumen) as total')
+        $resultados = $query->selectRaw('MONTH(fecha_hora) as mes, SUM(consumo_intervalo_m3) as total') // CAMBIO
             ->whereYear('fecha_hora', $year)
             ->groupBy('mes')
             ->get();
@@ -479,7 +479,8 @@ class PropietarioController extends Controller
                 return $departamento->medidores->sum(function($medidor) {
                     return $medidor->consumos()
                         ->whereMonth('fecha_hora', now()->month)
-                        ->sum('volumen');
+                        // CAMBIO: usar consumo_intervalo_m3 en lugar de volumen
+                        ->sum('consumo_intervalo_m3');
                 });
             });
             
@@ -560,7 +561,8 @@ class PropietarioController extends Controller
             return $medidor->consumos()
                 ->whereYear('fecha_hora', substr($periodo, 0, 4))
                 ->whereMonth('fecha_hora', substr($periodo, 5, 2))
-                ->sum('volumen');
+                // CAMBIO: usar consumo_intervalo_m3 en lugar de volumen
+                ->sum('consumo_intervalo_m3');
         });
     }
 
@@ -606,20 +608,19 @@ class PropietarioController extends Controller
                 return $medidor->consumos()
                     ->whereYear('fecha_hora', substr($currentMonth, 0, 4))
                     ->whereMonth('fecha_hora', substr($currentMonth, 5, 2))
-                    ->sum('volumen');
+                    // CAMBIO: usar consumo_intervalo_m3 en lugar de volumen
+                    ->sum('consumo_intervalo_m3');
             });
 
             if ($consumo > 0) {
-                // Obtener residentes con formato controlado
+                // ... resto del código igual
                 $residentes = $departamento->residentes;
                 $residentesNombres = '';
                 
                 if ($residentes->count() > 0) {
                     if ($residentes->count() <= 2) {
-                        // Mostrar todos los nombres si son 2 o menos
                         $residentesNombres = $residentes->pluck('nombre')->implode(', ');
                     } else {
-                        // Mostrar el primero y "y X más" si son más de 2
                         $primerResidente = $residentes->first()->nombre;
                         $cantidadRestantes = $residentes->count() - 1;
                         $residentesNombres = $primerResidente . " y " . $cantidadRestantes . " más";
@@ -823,7 +824,7 @@ class PropietarioController extends Controller
     // Métodos auxiliares para obtener datos
     private function getConsumoData($edificioId, $year)
     {
-        $query = ConsumoAgua::join('medidor', 'consumo_agua.id_medidor', '=', 'medidor.id')
+        $query = \App\Models\ConsumoAgua::join('medidor', 'consumo_agua.id_medidor', '=', 'medidor.id')
             ->join('departamento', 'medidor.id_departamento', '=', 'departamento.id')
             ->join('edificio', 'departamento.id_edificio', '=', 'edificio.id')
             ->where('edificio.id_propietario', auth()->id())
@@ -833,7 +834,8 @@ class PropietarioController extends Controller
             $query->where('edificio.id', $edificioId);
         }
 
-        return $query->selectRaw('MONTH(consumo_agua.fecha_hora) as mes, SUM(consumo_agua.volumen) as total')
+        // CAMBIO: usar consumo_intervalo_m3 en lugar de volumen
+        return $query->selectRaw('MONTH(consumo_agua.fecha_hora) as mes, SUM(consumo_agua.consumo_intervalo_m3) as total')
             ->groupBy('mes')
             ->pluck('total', 'mes')
             ->toArray();

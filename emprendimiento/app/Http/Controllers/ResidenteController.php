@@ -20,15 +20,17 @@ class ResidenteController extends Controller
     public function departamento()
     {
         $user = auth()->user();
-        $departamento = $user->departamentosResidente()
-            ->where(function($query) {
-                $query->where('fecha_fin', '>=', now())
-                    ->orWhereNull('fecha_fin');
-            })
-            ->with(['edificio', 'medidores.gateway', 'medidores.consumos' => function($query) {
-                $query->orderBy('fecha_hora', 'desc')->take(10);
-            }])
-            ->firstOrFail();
+        
+        // Para residentes - obtener su departamento
+        $departamento = Departamento::with([
+            'edificio.propietario',
+            'medidores.gateway',
+            'medidores.consumos' => function($query) {
+                $query->orderBy('fecha_hora', 'desc')->take(20);
+            }
+        ])->whereHas('residentes', function($query) use ($user) {
+            $query->where('id_residente', $user->id);
+        })->first();
 
         return view('residente.departamento', compact('departamento'));
     }
@@ -124,7 +126,7 @@ class ResidenteController extends Controller
         $consumos = ConsumoAgua::whereHas('medidor', function($query) use ($departamento) {
             $query->where('id_departamento', $departamento->id);
         })
-        ->selectRaw('MONTH(fecha_hora) as mes, SUM(volumen) as total')
+        ->selectRaw('MONTH(fecha_hora) as mes, SUM(consumo_intervalo_m3) as total')
         ->whereYear('fecha_hora', $year)
         ->groupBy('mes')
         ->get();

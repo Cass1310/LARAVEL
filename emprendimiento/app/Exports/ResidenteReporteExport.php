@@ -43,7 +43,7 @@ class ResidenteReporteExport implements FromCollection, WithHeadings, WithTitle,
                 return $medidor->consumos()
                     ->whereYear('fecha_hora', $this->year)
                     ->whereMonth('fecha_hora', $mes)
-                    ->sum('volumen');
+                    ->sum('consumo_intervalo_m3');
             });
 
             $alertas = $departamento->medidores->sum(function($medidor) use ($mes) {

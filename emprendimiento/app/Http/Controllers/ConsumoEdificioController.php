@@ -92,7 +92,7 @@ class ConsumoEdificioController extends Controller
             return $medidor->consumos()
                 ->whereYear('fecha_hora', substr($periodo, 0, 4))
                 ->whereMonth('fecha_hora', substr($periodo, 5, 2))
-                ->sum('volumen');
+                ->sum('consumo_intervalo_m3');
         });
     }
 

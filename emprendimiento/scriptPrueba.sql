@@ -1,51 +1,50 @@
--- LIMPIAR DATOS EXISTENTES (opcional para pruebas)
-DELETE FROM alerta WHERE id > 0;
-DELETE FROM consumo_agua WHERE fecha_hora >= '2025-11-11';
+use emprendimiento;
+-- Limpiamos el medidor para mostrar que no hay ninguna fuga
+DELETE FROM consumo_agua WHERE id_medidor = 6;
+DELETE FROM alerta WHERE id_medidor = 6;
 
--- PRUEBA 1: CONSUMO EXCESIVO
-INSERT INTO consumo_agua (id_medidor, fecha_hora, volumen, tipo_registro, created_at, updated_at) 
-VALUES 
-(1, '2025-11-11 08:00:00', 150.00, 'transmision', NOW(), NOW());
+-- base de la configuracion
+SET @fecha_base = NOW() - INTERVAL 5 HOUR;
+SET @totalizador = 150.000;
+SET @medidor_id = 6;
 
--- PRUEBA 2: CONSUMO BRUSCO
--- Primero crear patrón normal
-INSERT INTO consumo_agua (id_medidor, fecha_hora, volumen, tipo_registro, created_at, updated_at) 
-VALUES 
-(2, '2025-11-11 07:00:00', 3.20, 'transmision', NOW(), NOW()),
-(2, '2025-11-11 07:15:00', 2.80, 'transmision', NOW(), NOW()),
-(2, '2025-11-11 07:30:00', 4.10, 'transmision', NOW(), NOW()),
-(2, '2025-11-11 07:45:00', 3.50, 'transmision', NOW(), NOW()),
-(2, '2025-11-11 08:00:00', 2.90, 'transmision', NOW(), NOW());
+-- Insertar 21 lecturas con flow constante de ~1.5 L/min 
+INSERT INTO consumo_agua (id_medidor, fecha_hora, totalizador_m3, flow_l_min, bateria, flags, consumo_intervalo_m3, tipo_registro, created_at, updated_at) VALUES
+(@medidor_id, @fecha_base + INTERVAL 0 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 15 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 30 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 45 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 60 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 75 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 90 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 105 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 120 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 135 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 150 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 165 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 180 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 195 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 210 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 225 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 240 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 255 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 270 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 285 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW()),
+(@medidor_id, @fecha_base + INTERVAL 300 MINUTE, @totalizador := @totalizador + 0.0225, 1.500, 95, '{"leak": false, "backflow": false, "tamper": false}', 0.0225, 'transmision', NOW(), NOW());
 
--- Luego consumo brusco
-INSERT INTO consumo_agua (id_medidor, fecha_hora, volumen, tipo_registro, created_at, updated_at) 
-VALUES 
-(2, '2025-11-11 08:15:00', 65.00, 'transmision', NOW(), NOW());
+-- Verificar alertas generadas
+SELECT '=== ALERTAS GENERADAS ===' as '';
+SELECT * FROM alerta WHERE id_medidor = 6 ORDER BY created_at DESC;
 
--- PRUEBA 3: FUGA
--- Crear lecturas consecutivas para fuga
-INSERT INTO consumo_agua (id_medidor, fecha_hora, volumen, tipo_registro, created_at, updated_at) 
-VALUES 
-(3, '2025-11-11 06:00:00', 1.20, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 06:15:00', 1.10, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 06:30:00', 1.30, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 06:45:00', 1.00, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 07:00:00', 1.20, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 07:15:00', 1.30, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 07:30:00', 1.10, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 07:45:00', 1.20, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 08:00:00', 1.40, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 08:15:00', 1.50, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 08:30:00', 1.20, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 08:45:00', 1.10, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 09:00:00', 1.20, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 09:15:00', 1.00, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 09:30:00', 1.30, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 09:45:00', 1.20, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 10:00:00', 1.10, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 10:15:00', 1.40, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 10:30:00', 1.30, 'transmision', NOW(), NOW()),
-(3, '2025-11-11 10:45:00', 1.20, 'transmision', NOW(), NOW());
-
--- VERIFICAR ALERTAS GENERADAS
-SELECT * FROM alerta ORDER BY fecha_hora DESC;
+-- Verificar conteo de lecturas con flow constante
+SELECT '=== VERIFICACIÓN DE LECTURAS ===' as '';
+SELECT 
+    COUNT(*) as total_lecturas_constantes,
+    AVG(flow_l_min) as flow_promedio,
+    MIN(fecha_hora) as primera_lectura,
+    MAX(fecha_hora) as ultima_lectura,
+    TIMESTAMPDIFF(MINUTE, MIN(fecha_hora), MAX(fecha_hora)) as minutos_totales
+FROM consumo_agua 
+WHERE id_medidor = 6 
+    AND fecha_hora >= @fecha_base
+    AND flow_l_min BETWEEN 0.5 AND 5.0;

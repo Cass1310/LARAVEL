@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('medidor', function (Blueprint $table) {
             $table->id();
             $table->string('codigo_lorawan', 100)->unique();
+            
             $table->foreignId('id_departamento')->constrained('departamento');
             $table->foreignId('id_gateway')->constrained('gateway');
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');

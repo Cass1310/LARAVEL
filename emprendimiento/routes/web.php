@@ -12,6 +12,14 @@ use App\Http\Controllers\SuscripcionController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
+
+use App\Http\Controllers\SimuladorLoRaController;
+
+Route::prefix('simular')->group(function () {
+    Route::post('/lectura', [SimuladorLoRaController::class, 'simularLectura']);
+    Route::post('/lecturas-masivas', [SimuladorLoRaController::class, 'generarLecturasMasivas']);
+});
+
 Route::get('/', function () {
     return view('welcome');
 });

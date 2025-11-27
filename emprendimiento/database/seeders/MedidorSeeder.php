@@ -22,6 +22,8 @@ class MedidorSeeder extends Seeder
         foreach ($departamentos as $departamento) {
             $medidores[] = [
                 'codigo_lorawan' => 'LW-' . str_pad($counter, 4, '0', STR_PAD_LEFT),
+                'device_eui' => 'A81758FFFE0' . str_pad($counter, 5, '0', STR_PAD_LEFT), // EUI simulado
+                'dev_id' => 'medidor_' . $counter,
                 'id_departamento' => $departamento->id,
                 'id_gateway' => $gateway->id,
                 'estado' => 'activo',
@@ -30,6 +32,7 @@ class MedidorSeeder extends Seeder
             ];
             $counter++;
         }
+
         foreach ($medidores as $medidor) {
             Medidor::create($medidor);
         }

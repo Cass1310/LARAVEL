@@ -12,8 +12,10 @@ class ConsumoAguaSeeder extends Seeder
 {
     public function run(): void
     {
-        $fechaInicio = Carbon::create(2025, 11, 1, 0, 0, 0);
+        DB::table('alerta')->truncate();
+        $fechaInicio = Carbon::create(2024, 11, 1, 0, 0, 0);
         $fechaFin = Carbon::create(2025, 11, 26, 23, 59, 59);
+        $fechaFinA = Carbon::create(2025, 10, 31, 23, 59, 59);
         $intervaloMinutos = 15;
 
         $medidores = Medidor::all();
@@ -68,10 +70,10 @@ class ConsumoAguaSeeder extends Seeder
                 ];
 
                 // Insertar en lotes para mejor performance
-                if (count($batch) >= 500) {
+                if (count($batch) >= 1000) {
                     DB::table('consumo_agua')->insert($batch);
                     $batch = [];
-                    $this->command->info("  Insertadas 500 lecturas...");
+                    $this->command->info("  Insertadas 1000 lecturas...");
                 }
 
                 $fechaActual->addMinutes($intervaloMinutos);
@@ -87,6 +89,10 @@ class ConsumoAguaSeeder extends Seeder
         }
 
         $this->command->info("Seeder de consumo_agua completado.");
+        // Eliminar alertas generadas en el periodo de prueba
+        DB::table('alerta')
+        ->where('fecha_hora', '>=', $fechaInicio)->where('fecha_hora', '<=', $fechaFinA)->delete();
+        $this->command->info("Alertas de prueba eliminadas.");
     }
 
     /**

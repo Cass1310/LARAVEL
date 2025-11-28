@@ -17,15 +17,19 @@
         @csrf
         @method('patch')
 
+        <!-- Campo Nombre -->
         <div>
-            <x-input-label for="name" :value="__('Nombre')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <x-input-label for="nombre" :value="__('Nombre Completo')" />
+            <x-text-input id="nombre" name="nombre" type="text" class="mt-1 block w-full" 
+                         :value="old('nombre', $user->nombre)" required autofocus autocomplete="name" />
+            <x-input-error class="mt-2" :messages="$errors->get('nombre')" />
         </div>
 
+        <!-- Campo Email -->
         <div>
             <x-input-label for="email" :value="__('Correo Electrónico')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" 
+                         :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
@@ -45,6 +49,32 @@
                     @endif
                 </div>
             @endif
+        </div>
+
+        <!-- Campo Teléfono -->
+        <div>
+            <x-input-label for="telefono" :value="__('Teléfono')" />
+            <x-text-input id="telefono" name="telefono" type="text" class="mt-1 block w-full" 
+                         :value="old('telefono', $user->telefono)" autocomplete="tel" />
+            <x-input-error class="mt-2" :messages="$errors->get('telefono')" />
+        </div>
+
+        <!-- Campo Dirección -->
+        <div>
+            <x-input-label for="direccion" :value="__('Dirección')" />
+            <x-text-input id="direccion" name="direccion" type="text" class="mt-1 block w-full" 
+                         :value="old('direccion', $user->direccion)" autocomplete="street-address" />
+            <x-input-error class="mt-2" :messages="$errors->get('direccion')" />
+        </div>
+
+        <!-- Campo Rol (solo lectura) -->
+        <div>
+            <x-input-label for="rol" :value="__('Rol')" />
+            <x-text-input id="rol" name="rol" type="text" class="mt-1 block w-full bg-gray-100 dark:bg-gray-700" 
+                         :value="old('rol', $user->rol)" readonly disabled />
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {{ __('El rol no puede ser modificado.') }}
+            </p>
         </div>
 
         <div class="flex items-center gap-4">

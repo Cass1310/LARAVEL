@@ -13,10 +13,14 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SimuladorLoRaController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\AuditoriaController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->name('logout')
+    ->middleware('auditoria.logout');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -221,5 +225,9 @@ Route::middleware(['auth', 'verified', 'role:administrador'])
             Route::post('/lectura', [SimuladorLoRaController::class, 'simularLectura']);
             Route::post('/lecturas-masivas', [SimuladorLoRaController::class, 'generarLecturasMasivas']);
         });
+        // En rutas de admin
+        Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
+        Route::get('/auditoria/{id}', [AuditoriaController::class, 'show'])->name('auditoria.show');
+        Route::get('/auditoria/usuario/{userId}', [AuditoriaController::class, 'usuario'])->name('auditoria.usuario');
     });
 require __DIR__.'/auth.php';

@@ -86,9 +86,6 @@
                                 <x-nav-link :href="route('admin.reportes')" :active="request()->routeIs('admin.reportes*')">
                                     <i class="bi bi-graph-up me-1"></i>{{ __('Reportes') }}
                                 </x-nav-link>
-                                <x-nav-link :href="route('admin.backups.index')" :active="request()->routeIs('admin.backups*')">
-                                    <i class="bi bi-archive me-1"></i>{{ __('Backups') }}
-                                </x-nav-link>
                             </div>
                         @endif
                     @endauth
@@ -125,6 +122,14 @@
                             <x-dropdown-link :href="route('suscripcion.index')">
                                 <i class="bi bi-credit-card me-2"></i>{{ __('Mi Suscripción') }}
                             </x-dropdown-link>
+                        @endif
+                        @if(in_array(Auth::user()->rol, ['administrador']))
+                                <x-dropdown-link :href="route('admin.backups.index')" :active="request()->routeIs('admin.backups*')">
+                                    <i class="bi bi-archive me-1"></i>{{ __('Backups') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.auditoria.index')" :active="request()->routeIs('admin.auditoria*')">
+                                    <i class="bi bi-shield-check me-1"></i>{{ __('Auditoría') }}
+                                </x-dropdown-link>
                         @endif
 
                         <!-- Authentication -->

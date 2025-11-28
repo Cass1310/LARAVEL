@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'suscripcion' => \App\Http\Middleware\CheckSuscripcion::class,
         ]);
     })
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'auditoria.logout' => \App\Http\Middleware\LogAuditoriaLogout::class,
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

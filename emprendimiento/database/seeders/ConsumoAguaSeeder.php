@@ -13,7 +13,7 @@ class ConsumoAguaSeeder extends Seeder
     public function run(): void
     {
         DB::table('alerta')->truncate();
-        $fechaInicio = Carbon::create(2024, 11, 1, 0, 0, 0);
+        $fechaInicio = Carbon::create(2025, 11, 1, 0, 0, 0);
         $fechaFin = Carbon::create(2025, 11, 26, 23, 59, 59);
         $fechaFinA = Carbon::create(2025, 10, 31, 23, 59, 59);
         $intervaloMinutos = 15;

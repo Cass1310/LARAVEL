@@ -11,14 +11,8 @@ use App\Http\Controllers\PropietarioController;
 use App\Http\Controllers\SuscripcionController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
-
-
 use App\Http\Controllers\SimuladorLoRaController;
-
-Route::prefix('simular')->group(function () {
-    Route::post('/lectura', [SimuladorLoRaController::class, 'simularLectura']);
-    Route::post('/lecturas-masivas', [SimuladorLoRaController::class, 'generarLecturasMasivas']);
-});
+use App\Http\Controllers\BackupController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -215,5 +209,17 @@ Route::middleware(['auth', 'verified', 'role:administrador'])
         // Gateways
         Route::get('/gateways/exportar-pdf', [AdminController::class, 'exportarGatewaysPdf'])->name('gateways.exportar-pdf');
         Route::get('/gateways/exportar-excel', [AdminController::class, 'exportarGatewaysExcel'])->name('gateways.exportar-excel');
+        // En rutas de admin
+        Route::prefix('backups')->name('backups.')->group(function () {
+            Route::get('/', [BackupController::class, 'index'])->name('index');
+            Route::post('/create', [BackupController::class, 'create'])->name('create');
+            Route::get('/download/{filename}', [BackupController::class, 'download'])->name('download');
+            Route::delete('/delete/{filename}', [BackupController::class, 'delete'])->name('delete');
+            Route::post('/clean', [BackupController::class, 'clean'])->name('clean');
+        });
+        Route::prefix('simular')->group(function () {
+            Route::post('/lectura', [SimuladorLoRaController::class, 'simularLectura']);
+            Route::post('/lecturas-masivas', [SimuladorLoRaController::class, 'generarLecturasMasivas']);
+        });
     });
 require __DIR__.'/auth.php';

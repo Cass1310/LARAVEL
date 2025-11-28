@@ -86,6 +86,9 @@
                                 <x-nav-link :href="route('admin.reportes')" :active="request()->routeIs('admin.reportes*')">
                                     <i class="bi bi-graph-up me-1"></i>{{ __('Reportes') }}
                                 </x-nav-link>
+                                <x-nav-link :href="route('admin.backups.index')" :active="request()->routeIs('admin.backups*')">
+                                    <i class="bi bi-archive me-1"></i>{{ __('Backups') }}
+                                </x-nav-link>
                             </div>
                         @endif
                     @endauth
@@ -218,6 +221,9 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.reportes')" :active="request()->routeIs('admin.reportes*')">
                         <i class="bi bi-graph-up me-2"></i>{{ __('Reportes') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.backups.index')" :active="request()->routeIs('admin.backups*')">
+                        <i class="bi bi-archive me-2"></i>{{ __('Backups') }}
                     </x-responsive-nav-link>
                 @endif
             @endauth

@@ -29,7 +29,6 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        // Métricas generales
         $metricas = [
             'total_usuarios' => User::count(),
             'total_propietarios' => User::where('rol', 'propietario')->count(),
@@ -41,12 +40,12 @@ class AdminController extends Controller
             'mantenimientos_pendientes' => Mantenimiento::count(),
             'suscripciones_activas' => Suscripcion::where('estado', 'activa')->count(),
         ];
-
         // Datos para gráficos
         $consumoPorEdificio = $this->getConsumoPorEdificio();
         $pagosPorEdificio = $this->getPagosPorEdificio();
         $suscripcionesData = $this->getSuscripcionesData();
 
+        
         // Alertas y mantenimientos recientes
         $alertasRecientes = Alerta::with('medidor.departamento.edificio')
             ->where('estado', 'pendiente')
@@ -71,9 +70,12 @@ class AdminController extends Controller
 
     private function getConsumoPorEdificio()
     {
-        $edificios = Edificio::with(['departamentos.medidores.consumos'])->get();
+        $edificios = $edificios = Edificio::with(['departamentos.medidores' => function($q) {
+            $q->with(['consumos' => function($q2) {
+                $q2->latest()->limit(2880);
+            }]);
+        }])->get();
         $data = [];
-
         foreach ($edificios as $edificio) {
             $consumoTotal = $edificio->departamentos->sum(function($departamento) {
                 return $departamento->medidores->sum(function($medidor) {
@@ -416,7 +418,6 @@ class AdminController extends Controller
         $consumoPorEdificio = $this->getConsumoPorEdificio();
         $pagosPorEdificio = $this->getPagosPorEdificio();
         $consumoPorDepartamento = $this->getConsumoPorDepartamento();
-
         return view('admin.reportes.index', compact(
             'consumoPorEdificio',
             'pagosPorEdificio',
@@ -426,23 +427,43 @@ class AdminController extends Controller
 
     private function getConsumoPorDepartamento()
     {
-        $departamentos = Departamento::with(['edificio', 'medidores.consumos'])->get();
+        $departamentos = Departamento::with(['edificio', 'medidores', 'residentes', 'consumoDepartamento'])->get();
         $data = [];
 
         foreach ($departamentos as $departamento) {
+            // Consumo total del mes según los medidores
             $consumoTotal = $departamento->medidores->sum(function($medidor) {
-                return $medidor->consumos()->whereMonth('fecha_hora', now()->month)->sum('consumo_intervalo_m3');
+                return $medidor->consumos()
+                    ->whereMonth('fecha_hora', now()->month)
+                    ->whereYear('fecha_hora', now()->year)
+                    ->sum('consumo_intervalo_m3');
             });
+
+            // Nombres de residentes
+            $residentesNombres = $departamento->residentes->pluck('nombre')->implode(', ');
+
+            // Datos de consumo_departamento basado en el periodo del edificio
+            $consumoDepartamento = $departamento->consumoDepartamento; // ya filtrado por periodo
+            $montoAsignado = $consumoDepartamento->monto_asignado ?? 0;
+            $estado = $consumoDepartamento->estado ?? 'pendiente';
+            $consumo_m3 = $consumoDepartamento->consumo_m3 ?? $consumoTotal;
 
             $data[] = [
                 'departamento' => $departamento->numero_departamento,
+                'residentes' => $residentesNombres ?: 'Sin residentes',
+                'cantidad_residentes' => $departamento->residentes->count(),
                 'edificio' => $departamento->edificio->nombre,
-                'consumo' => $consumoTotal
+                'consumo' => $consumo_m3,
+                'monto_asignado' => $montoAsignado,
+                'estado' => $estado,
             ];
         }
 
         return $data;
     }
+
+
+
 
     public function propietarios()
     {

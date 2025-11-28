@@ -28,9 +28,17 @@ class PropietarioController extends Controller
     {
         $user = auth()->user();
         
-        $edificios = Edificio::with(['departamentos.medidores.consumos', 'departamentos.residentes'])
-            ->where('id_propietario', $user->id)
-            ->get();
+        $edificios = Edificio::with([
+            'departamentos.residentes',
+            'departamentos.medidores' => function($medidoresQuery) {
+                $medidoresQuery->with(['consumos' => function($consumosQuery) {
+                    $consumosQuery->orderBy('fecha_hora', 'desc')
+                                ->limit(100); // Solo los últimos 100 registros
+                }]);
+            }
+        ])
+        ->where('id_propietario', $user->id)
+        ->get();
 
         $metricas = $this->getMetricasPropietario($edificios);
         $consumoPorEdificio = $this->getConsumoPorEdificio($edificios);
@@ -479,7 +487,6 @@ class PropietarioController extends Controller
                 return $departamento->medidores->sum(function($medidor) {
                     return $medidor->consumos()
                         ->whereMonth('fecha_hora', now()->month)
-                        // CAMBIO: usar consumo_intervalo_m3 en lugar de volumen
                         ->sum('consumo_intervalo_m3');
                 });
             });

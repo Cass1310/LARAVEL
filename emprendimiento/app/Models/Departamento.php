@@ -45,4 +45,15 @@ class Departamento extends Model
     {
         return $this->hasMany(ConsumoDepartamento::class, 'id_departamento');
     }
+    public function consumoDepartamento()
+    {
+        return $this->hasOne(ConsumoDepartamento::class, 'id_departamento')
+                    ->whereHas('consumoEdificio', function($query) {
+                        // Filtrar por periodo actual del edificio (YYYY-MM)
+                        $query->where('periodo', now()->format('Y-m'));
+                    });
+    }
+
+
+
 }

@@ -16,6 +16,7 @@ use App\Models\ConsumoDepartamento;
 use App\Models\ConsumoAgua;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Exports\AlertasExport;
 use App\Exports\AlertasPdfExport;
@@ -398,7 +399,13 @@ class AdminController extends Controller
             'monto' => 'required|numeric|min:0',
             'periodo' => 'required|string|max:20',
             'metodo_pago' => 'required|string|max:50',
+            'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        $comprobantePath = null;
+        if ($request->hasFile('comprobante')) {
+            $comprobantePath = $request->file('comprobante')->store('comprobantes', 'public');
+        }
 
         SuscripcionPago::create([
             'id_suscripcion' => $suscripcionId,
@@ -406,7 +413,8 @@ class AdminController extends Controller
             'periodo' => $validated['periodo'],
             'estado' => 'pagado',
             'fecha_pago' => now(),
-            'metodo_pago' => $validated['metodo_pago']
+            'metodo_pago' => $validated['metodo_pago'],
+            'comprobante' => $comprobantePath,
         ]);
 
         return redirect()->back()->with('success', 'Pago registrado exitosamente');

@@ -16,7 +16,9 @@ class SuscripcionPago extends Model
         'periodo',
         'monto',
         'estado',
-        'fecha_pago'
+        'fecha_pago',
+        'comprobante',
+        'metodo_pago'
     ];
 
     protected $casts = [
@@ -50,5 +52,14 @@ class SuscripcionPago extends Model
             'estado' => 'pagado',
             'fecha_pago' => now(),
         ]);
+    }
+
+    public function getComprobanteUrlAttribute()
+    {
+        if (empty($this->comprobante)) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Storage::url($this->comprobante);
     }
 }

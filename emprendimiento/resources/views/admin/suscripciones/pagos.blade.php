@@ -15,7 +15,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.suscripciones.pagos.registrar', $suscripcion) }}" method="POST" class="mb-4">
+                    <form action="{{ route('admin.suscripciones.pagos.registrar', $suscripcion) }}" method="POST" class="mb-4" enctype="multipart/form-data">
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-3">
@@ -29,6 +29,10 @@
                             <div class="col-md-3">
                                 <label class="form-label">Método de Pago *</label>
                                 <input type="text" class="form-control" name="metodo_pago" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Comprobante (PDF/IMG)</label>
+                                <input type="file" class="form-control" name="comprobante" accept=".pdf,image/*">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">&nbsp;</label>
@@ -46,6 +50,7 @@
                                     <th>Período</th>
                                     <th>Monto</th>
                                     <th>Método</th>
+                                            <th>Comprobante</th>
                                     <th>Estado</th>
                                     <th>Fecha Pago</th>
                                 </tr>
@@ -56,12 +61,19 @@
                                         <td>{{ $pago->periodo }}</td>
                                         <td>Bs./ {{ number_format($pago->monto, 2) }}</td>
                                         <td>{{ $pago->metodo_pago }}</td>
-                                        <td>
+                                                <td>
+                                                    @if($pago->comprobante_url)
+                                                        <a href="{{ $pago->comprobante_url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver</a>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td>
                                             <span class="badge bg-{{ $pago->estado == 'pagado' ? 'success' : 'warning' }}">
                                                 {{ ucfirst($pago->estado) }}
                                             </span>
                                         </td>
-                                        <td>{{ $pago->fecha_pago?->format('d/m/Y') ?? 'Pendiente' }}</td>
+                                                <td>{{ $pago->fecha_pago?->format('d/m/Y') ?? 'Pendiente' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

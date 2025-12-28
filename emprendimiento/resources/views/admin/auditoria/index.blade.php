@@ -109,7 +109,6 @@
                                     <th>Módulo</th>
                                     <th>Descripción</th>
                                     <th>IP</th>
-                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -142,12 +141,6 @@
                                         <td>{{ $log->modulo ?? 'Sistema' }}</td>
                                         <td>{{ Str::limit($log->descripcion, 50) }}</td>
                                         <td><small>{{ $log->ip_address }}</small></td>
-                                        <td>
-                                            <a href="{{ route('admin.auditoria.show', $log->id) }}" 
-                                               class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
